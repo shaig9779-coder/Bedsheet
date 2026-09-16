@@ -16,22 +16,21 @@
     select.input{ appearance:none; }
     .admin-nav{ scrollbar-width:none; }
     .admin-nav::-webkit-scrollbar{ display:none; }
-    .admin-mobile-nav,
+    .admin-mobile-menu-wrap,
     .admin-mobile-logout{ display:none; }
     @media (max-width:760px){
       .admin-shell{ display:block !important; }
       .admin-sidebar{ width:100% !important; padding:12px !important; display:block !important; }
       .admin-brand{ margin-bottom:0 !important; }
-      .admin-role{ margin:2px 0 10px !important; }
-      .admin-nav{ display:flex !important; flex-direction:row !important; gap:4px !important; overflow-x:auto; padding-bottom:2px; }
-      .admin-nav > div{ flex:none; white-space:nowrap; padding:9px 10px !important; }
+      .admin-role{ display:none !important; }
+      .admin-nav{ display:none !important; }
       .admin-logout{ display:none !important; }
       .admin-main{ min-height:calc(100vh - 106px); }
       .admin-header{ padding:12px 16px !important; flex-wrap:wrap; }
       .admin-header h2{ font-size:24px; }
       .admin-header-tools{ gap:8px !important; }
       .admin-user-name{ display:none; }
-      .admin-mobile-nav{ display:block; order:3; width:100%; }
+      .admin-mobile-menu-wrap{ display:block; position:relative; }
       .admin-mobile-logout{ display:inline-flex; }
       .admin-content{ padding:16px !important; }
       .admin-dashboard-top,
@@ -104,11 +103,18 @@
   <div class="admin-main" style="flex:1; min-width:0; display:flex; flex-direction:column;">
     <div class="admin-header" style="display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:2px solid var(--color-divider); gap:16px;">
       <h2 style="margin:0;">{{ adminPageTitle }}</h2>
-      <select class="admin-mobile-nav input" value="{{ adminView }}" onChange="{{ onAdminMobileNavChange }}" aria-label="Admin section">
-        <sc-for list="{{ adminNavItems }}" as="item" hint-placeholder-count="4"><option value="{{ item.value }}">{{ item.label }}</option></sc-for>
-      </select>
       <div class="admin-header-tools" style="display:flex; align-items:center; gap:18px;">
         <div class="admin-user-name" style="font-size:13px; color:color-mix(in srgb, var(--color-text) 60%, transparent);">{{ currentUser.name }}</div>
+        <div class="admin-mobile-menu-wrap">
+          <button class="btn btn-icon btn-secondary" onClick="{{ toggleAdminMenu }}" title="Open admin menu">{{ iconMenu }}</button>
+          <sc-if value="{{ adminMenuOpen }}">
+            <div class="card elev-lg" style="position:absolute; top:42px; right:0; width:220px; z-index:40; padding:6px;">
+              <sc-for list="{{ adminNavItems }}" as="item" hint-placeholder-count="4">
+                <div onClick="{{ item.onClick }}" style="display:flex; align-items:center; gap:10px; padding:10px; cursor:pointer; font-size:13px; font-weight:600; color:{{ item.color }}; background:{{ item.bg }};">{{ item.icon }}<span>{{ item.label }}</span></div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
         <button class="btn btn-icon btn-secondary" onClick="{{ toggleTheme }}" title="Toggle dark mode">{{ iconThemeToggle }}</button>
         <button class="btn btn-secondary admin-mobile-logout" onClick="{{ logout }}">{{ iconLogOut }}Log out</button>
         <div style="position:relative;">
@@ -903,6 +909,7 @@ class Component extends DCLogic {
     camera: [{t:'path',d:'M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z'},{t:'circle',cx:12,cy:13.5,r:3.4}],
     trash: [{t:'path',d:'M4 7h16'},{t:'path',d:'M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7'},{t:'path',d:'M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13'}],
     grid: [{t:'rect',x:3,y:3,width:8,height:8},{t:'rect',x:13,y:3,width:8,height:8},{t:'rect',x:3,y:13,width:8,height:8},{t:'rect',x:13,y:13,width:8,height:8}],
+    menu: [{t:'path',d:'M4 6h16'},{t:'path',d:'M4 12h16'},{t:'path',d:'M4 18h16'}],
     copy: [{t:'rect',x:9,y:9,width:11,height:11,rx:1.5},{t:'path',d:'M5 15V5a1 1 0 0 1 1-1h10'}],
     sun: [{t:'circle',cx:12,cy:12,r:4},{t:'path',d:'M12 2v3'},{t:'path',d:'M12 19v3'},{t:'path',d:'M4.2 4.2l2.1 2.1'},{t:'path',d:'M17.7 17.7l2.1 2.1'},{t:'path',d:'M2 12h3'},{t:'path',d:'M19 12h3'},{t:'path',d:'M4.2 19.8l2.1-2.1'},{t:'path',d:'M17.7 6.3l2.1-2.1'}],
     moon: [{t:'path',d:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z'}]
@@ -934,7 +941,7 @@ class Component extends DCLogic {
       {id:'mib', bankName:'Maldives Islamic Bank (MIB)', accountName:'Skygo International Pvt Ltd', mvrNumber:'90012345601', usdNumber:'90012345602'}
     ], bankSaved: false, bankCopiedId: null,
     orderSearch: '', orderAreaFilter: 'All', orderStatusFilter: 'All',
-    adminView: 'dashboard', deliveryView: 'home',
+    adminView: 'dashboard', adminMenuOpen: false, deliveryView: 'home',
     newOrderOpen: false, newOrder: null, newOrderError: '',
     selectedOrderId: null, orderDetailOpen: false, reassignSelection: '',
     userFormOpen: false, newUser: {name:'', phone:'', email:''},
@@ -1033,10 +1040,10 @@ class Component extends DCLogic {
     const u = this.state.users.find(x=>x.email.toLowerCase()===email && x.status==='active');
     if(u){ this.quickLogin(u.id); } else { this.setState({loginError:'No matching demo account. Try one of the accounts below.'}); }
   };
-  logout = () => this.setState({role:null, currentUserId:null, loginEmail:'', loginPassword:'', notifOpen:false, adminView:'dashboard', deliveryView:'home'});
+  logout = () => this.setState({role:null, currentUserId:null, loginEmail:'', loginPassword:'', notifOpen:false, adminMenuOpen:false, adminView:'dashboard', deliveryView:'home'});
   toggleNotif = () => this.setState(s=>({notifOpen:!s.notifOpen}));
-  gotoAdmin = (v) => this.setState(s=>({adminView:v, notifOpen:false, deliveryView: v==='deliver' && !['areas','areaDetail'].includes(s.deliveryView) ? 'areas' : s.deliveryView}));
-  onAdminMobileNavChange = (e) => this.gotoAdmin(e.target.value);
+  toggleAdminMenu = () => this.setState(s=>({adminMenuOpen:!s.adminMenuOpen, notifOpen:false}));
+  gotoAdmin = (v) => this.setState(s=>({adminView:v, adminMenuOpen:false, notifOpen:false, deliveryView: v==='deliver' && !['areas','areaDetail'].includes(s.deliveryView) ? 'areas' : s.deliveryView}));
   gotoDelivery = (v) => this.setState({deliveryView:v, notifOpen:false});
   goDeliveries = () => this.setState({deliveryView:'areas', notifOpen:false});
   openArea = (area) => this.setState({selectedArea:area, deliveryView:'areaDetail'});
@@ -1214,6 +1221,7 @@ class Component extends DCLogic {
     const demoAccounts = s.users.filter(u=>u.status==='active').map(u=>({name:u.name, roleLabel: roleLabelOf(u.role), onClick: () => this.quickLogin(u.id)}));
 
     const iconBell = this.ic('bell',20);
+    const iconMenu = this.ic('menu',20);
     const iconLogOut = this.ic('logOut',18);
     const iconPlus = this.ic('plus',16);
     const iconCheck = this.ic('check',16);
@@ -1453,12 +1461,12 @@ class Component extends DCLogic {
       currentUser: {name: me.name, firstName: (me.name||'').split(' ')[0], initials: (me.name||'').split(' ').map(x=>x[0]).slice(0,2).join(''), phone: me.phone, email: me.email},
       logout: this.logout, toggleNotif: this.toggleNotif, notifOpen: s.notifOpen,
       notifications: s.notifications.slice(0,8), hasNotifications: s.notifications.length>0, noNotifications: s.notifications.length===0, notifCount: s.notifications.length>9?'9+':s.notifications.length,
-      iconBell, iconLogOut, iconPlus, iconCheck, iconX, iconHourglass, iconBarChart, iconPackage, iconArrowLeft, iconPhone, iconMapPin, iconCamera, iconTrash,
+      iconBell, iconMenu, iconLogOut, iconPlus, iconCheck, iconX, iconHourglass, iconBarChart, iconPackage, iconArrowLeft, iconPhone, iconMapPin, iconCamera, iconTrash,
       stop: this.stop,
       theme, themeVarsCss, iconThemeToggle, toggleTheme: this.toggleTheme,
       quickTiles, showOutstandingCard: isFullAdmin, totalOutstandingDisplay: this.fmt(totalOutstanding), goPayments: () => this.gotoAdmin('payments'),
 
-      adminNavItems, adminView: effectiveAdminView, onAdminMobileNavChange: this.onAdminMobileNavChange, adminPageTitle: pageTitles[effectiveAdminView],
+      adminNavItems, adminMenuOpen: s.adminMenuOpen, toggleAdminMenu: this.toggleAdminMenu, adminPageTitle: pageTitles[effectiveAdminView],
       isDashboardView: effectiveAdminView==='dashboard', isOrdersView: effectiveAdminView==='orders', isConfirmationsView: effectiveAdminView==='confirmations',
       isStaffView: effectiveAdminView==='staff', isPaymentsView: effectiveAdminView==='payments', isReportsView: effectiveAdminView==='reports', isSettingsView: effectiveAdminView==='settings',
       isDeliverView: effectiveAdminView==='deliver', isAreasView: s.deliveryView==='areas', isAreaDetailView: s.deliveryView==='areaDetail',
