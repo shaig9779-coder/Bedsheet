@@ -11,6 +11,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <link rel="stylesheet" href="_ds/modernist-c81d56b4-6ec6-44b2-b60b-a612c36a0b79/styles.css">
   <script src="./image-slot.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body{ -webkit-tap-highlight-color: transparent; }
     select.input{ appearance:none; }
@@ -872,6 +873,9 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   USER_STORAGE_KEY = 'skygo-bedsheet-users-v1';
+  SUPABASE_URL = 'https://uvrvjmyngavnxtcmrjsb.supabase.co';
+  SUPABASE_KEY = 'sb_publishable_RiOwdFQe5ROFIa5E89yjdg_IaHcp3id';
+  supabaseClient = null;
   areas = ["Hulhumale' Phase 1","Hulhumale' Phase 2","Galholhu","Maafannu","Henveiru","Boat / Launch"];
   SIZES = ['Single','Supersingle / Double','Queen','King'];
   designs = Array.from({length:25}, (_,i)=> String(i+1).padStart(3,'0'));
@@ -1036,13 +1040,30 @@ class Component extends DCLogic {
     if(!u) return;
     this.setState({role:u.role, currentUserId:u.id, loginError:'', notifOpen:false});
   };
-  submitLogin = (e) => {
+  submitLogin = async (e) => {
     e.preventDefault();
     const email = (this.state.loginEmail||'').trim().toLowerCase();
+    const client = this.getSupabase();
+    if(client){
+      const {data, error} = await client.auth.signInWithPassword({email, password:this.state.loginPassword});
+      if(!error && data.user){
+        const {data:profile} = await client.from('profiles').select('id,name,email,phone,role,status').eq('id',data.user.id).single();
+        if(profile?.status==='active'){
+          await this.loadRemoteUsers();
+          this.setState({role:profile.role, currentUserId:profile.id, loginError:''});
+          return;
+        }
+        await client.auth.signOut();
+      }
+    }
     const u = this.state.users.find(x=>x.email.toLowerCase()===email && x.status==='active');
     if(u){ this.quickLogin(u.id); } else { this.setState({loginError:'No matching demo account. Try one of the accounts below.'}); }
   };
-  logout = () => this.setState({role:null, currentUserId:null, loginEmail:'', loginPassword:'', notifOpen:false, adminMenuOpen:false, adminView:'dashboard', deliveryView:'home'});
+  logout = async () => {
+    const client = this.getSupabase();
+    if(client) await client.auth.signOut();
+    this.setState({role:null, currentUserId:null, loginEmail:'', loginPassword:'', notifOpen:false, adminMenuOpen:false, adminView:'dashboard', deliveryView:'home'});
+  };
   toggleNotif = () => this.setState(s=>({notifOpen:!s.notifOpen}));
   toggleAdminMenu = () => this.setState(s=>({adminMenuOpen:!s.adminMenuOpen, notifOpen:false}));
   gotoAdmin = (v) => this.setState(s=>({adminView:v, adminMenuOpen:false, notifOpen:false, deliveryView: v==='deliver' && !['areas','areaDetail'].includes(s.deliveryView) ? 'areas' : s.deliveryView}));
@@ -1157,15 +1178,47 @@ class Component extends DCLogic {
   saveNewUser = () => {
     const n = this.state.newUser; if(!n.name) return;
     const user = {id:'u'+Date.now(), name:n.name, phone:n.phone, email:n.email, role:'delivery', status:'active'};
+    const client = this.getSupabase();
+    if(client && this.state.role==='admin'){
+      client.from('app_users').insert(user).then(({error})=>{
+        if(error){ this.pushNotification('Could not save user to the shared database.'); return; }
+        this.setState(s=>({users:[...s.users, user], userFormOpen:false}), () => this.persistUsers(this.state.users));
+      });
+      return;
+    }
     this.setState(s=>({users:[...s.users, user], userFormOpen:false}), () => this.persistUsers(this.state.users));
   };
-  toggleUserStatus = (userId) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status: u.status==='active'?'disabled':'active'} : u)}), () => this.persistUsers(this.state.users));
-  changeUserRole = (userId, role) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}), () => this.persistUsers(this.state.users));
+  toggleUserStatus = (userId) => {
+    const user = this.state.users.find(u=>u.id===userId); if(!user) return;
+    const status = user.status==='active'?'disabled':'active';
+    const client = this.getSupabase();
+    const finish = () => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status} : u)}), () => this.persistUsers(this.state.users));
+    if(client && this.state.role==='admin' && !String(userId).startsWith('u')){
+      client.from('app_users').update({status}).eq('id',userId).then(({error})=> error ? this.pushNotification('Could not update the shared user record.') : finish());
+      return;
+    }
+    finish();
+  };
+  changeUserRole = (userId, role) => {
+    const client = this.getSupabase();
+    const finish = () => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}), () => this.persistUsers(this.state.users));
+    if(client && this.state.role==='admin' && !String(userId).startsWith('u')){
+      client.from('app_users').update({role}).eq('id',userId).then(({error})=> error ? this.pushNotification('Could not update the shared user record.') : finish());
+      return;
+    }
+    finish();
+  };
   removeUser = (userId) => {
     if(userId===this.state.currentUserId){ this.pushNotification('You cannot remove your own account while signed in.'); return; }
     const user = this.state.users.find(u=>u.id===userId);
     if(!user || (typeof window!=='undefined' && !window.confirm('Remove ' + user.name + '? This cannot be undone.'))) return;
-    this.setState(s=>({users:s.users.filter(u=>u.id!==userId)}), () => this.persistUsers(this.state.users));
+    const client = this.getSupabase();
+    const finish = () => this.setState(s=>({users:s.users.filter(u=>u.id!==userId)}), () => this.persistUsers(this.state.users));
+    if(client && this.state.role==='admin' && !String(userId).startsWith('u')){
+      client.from('app_users').delete().eq('id',userId).then(({error})=> error ? this.pushNotification('Could not remove the shared user record.') : finish());
+      return;
+    }
+    finish();
   };
   resetPassword = (userId) => this.pushNotification('Password reset link sent to ' + this.userName(userId));
 
@@ -1200,11 +1253,34 @@ class Component extends DCLogic {
   };
 
   currentUser(){ return this.state.users.find(u=>u.id===this.state.currentUserId) || {name:'', email:'', phone:''}; }
-  componentDidMount(){
+  getSupabase(){
+    if(!this.supabaseClient && typeof window!=='undefined' && window.supabase?.createClient){
+      this.supabaseClient = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_KEY);
+    }
+    return this.supabaseClient;
+  }
+  async loadRemoteUsers(){
+    const client = this.getSupabase(); if(!client) return false;
+    const {data, error} = await client.from('app_users').select('id,name,phone,email,role,status').order('created_at');
+    if(error) return false;
+    if(Array.isArray(data) && data.length){ this.setState({users:data}); this.persistUsers(data); }
+    return true;
+  }
+  async componentDidMount(){
     try {
       const saved = JSON.parse(localStorage.getItem(this.USER_STORAGE_KEY) || 'null');
       if(Array.isArray(saved) && saved.length) this.setState({users:saved});
     } catch {}
+    const client = this.getSupabase();
+    if(!client) return;
+    const {data:{session}} = await client.auth.getSession();
+    if(session?.user){
+      const {data:profile} = await client.from('profiles').select('id,name,email,phone,role,status').eq('id',session.user.id).single();
+      if(profile?.status==='active'){
+        await this.loadRemoteUsers();
+        this.setState({role:profile.role, currentUserId:profile.id, loginError:''});
+      }
+    }
   }
   persistUsers = (users) => {
     try { localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(users)); } catch {}
