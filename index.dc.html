@@ -310,6 +310,7 @@
                 <td style="display:flex; gap:6px;">
                   <button class="btn btn-ghost" style="font-size:12px;" onClick="{{ u.toggleStatus }}">{{ u.toggleLabel }}</button>
                   <button class="btn btn-ghost" style="font-size:12px;" onClick="{{ u.resetPassword }}">Reset password</button>
+                  <button class="btn btn-ghost" style="font-size:12px;" onClick="{{ u.removeUser }}">{{ iconTrash }}Remove</button>
                 </td>
               </tr>
             </sc-for>
@@ -1160,6 +1161,12 @@ class Component extends DCLogic {
   };
   toggleUserStatus = (userId) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status: u.status==='active'?'disabled':'active'} : u)}), () => this.persistUsers(this.state.users));
   changeUserRole = (userId, role) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}), () => this.persistUsers(this.state.users));
+  removeUser = (userId) => {
+    if(userId===this.state.currentUserId){ this.pushNotification('You cannot remove your own account while signed in.'); return; }
+    const user = this.state.users.find(u=>u.id===userId);
+    if(!user || (typeof window!=='undefined' && !window.confirm('Remove ' + user.name + '? This cannot be undone.'))) return;
+    this.setState(s=>({users:s.users.filter(u=>u.id!==userId)}), () => this.persistUsers(this.state.users));
+  };
   resetPassword = (userId) => this.pushNotification('Password reset link sent to ' + this.userName(userId));
 
   computeOutstanding(userId){
@@ -1326,7 +1333,7 @@ class Component extends DCLogic {
     const manageableUsers = s.users.map(u=>({
       ...u, statusLabel: u.status==='active'?'Active':'Disabled', statusTagClass: u.status==='active'?'tag-accent':'tag-neutral',
       toggleLabel: u.status==='active'?'Disable':'Enable', toggleStatus: () => this.toggleUserStatus(u.id),
-      resetPassword: () => this.resetPassword(u.id), onRoleChange: (e) => this.changeUserRole(u.id, e.target.value)
+      resetPassword: () => this.resetPassword(u.id), removeUser: () => this.removeUser(u.id), onRoleChange: (e) => this.changeUserRole(u.id, e.target.value)
     }));
 
     const paymentsRows = activeRiders.map(u=>{
