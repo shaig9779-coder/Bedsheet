@@ -14,6 +14,27 @@
   <style>
     body{ -webkit-tap-highlight-color: transparent; }
     select.input{ appearance:none; }
+    .admin-nav{ scrollbar-width:none; }
+    .admin-nav::-webkit-scrollbar{ display:none; }
+    @media (max-width:760px){
+      .admin-shell{ display:block !important; }
+      .admin-sidebar{ width:100% !important; padding:12px !important; display:block !important; }
+      .admin-brand{ margin-bottom:0 !important; }
+      .admin-role{ margin:2px 0 10px !important; }
+      .admin-nav{ display:flex !important; flex-direction:row !important; gap:4px !important; overflow-x:auto; padding-bottom:2px; }
+      .admin-nav > div{ flex:none; white-space:nowrap; padding:9px 10px !important; }
+      .admin-logout{ display:none !important; }
+      .admin-main{ min-height:calc(100vh - 106px); }
+      .admin-header{ padding:12px 16px !important; }
+      .admin-header h2{ font-size:24px; }
+      .admin-header-tools{ gap:8px !important; }
+      .admin-user-name{ display:none; }
+      .admin-content{ padding:16px !important; }
+      .admin-dashboard-top,
+      .admin-performance-grid{ grid-template-columns:1fr !important; }
+      .admin-stats-grid{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+      .admin-content .table{ min-width:680px; }
+    }
   </style>
 </helmet>
 
@@ -55,14 +76,14 @@
 </sc-if>
 
 <sc-if value="{{ isAdminShell }}" hint-placeholder-val="{{ false }}">
-<div style="display:flex; min-height:100vh;">
-  <div style="width:226px; flex:none; background:#14151a; display:flex; flex-direction:column; padding:20px 14px;">
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+<div class="admin-shell" style="display:flex; min-height:100vh;">
+  <div class="admin-sidebar" style="width:226px; flex:none; background:#14151a; display:flex; flex-direction:column; padding:20px 14px;">
+    <div class="admin-brand" style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
       <div style="width:20px; height:20px; flex:none; background:linear-gradient(135deg, var(--color-accent), #ff9783);"></div>
       <div style="font-family:var(--font-heading); font-weight:800; font-size:20px; color:#f5f4f3;">SKYBEDSHEET</div>
     </div>
-    <div style="font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#8b8c91; margin-bottom:20px;">{{ shellRoleLabel }}</div>
-    <div style="display:flex; flex-direction:column; gap:2px;">
+    <div class="admin-role" style="font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#8b8c91; margin-bottom:20px;">{{ shellRoleLabel }}</div>
+    <div class="admin-nav" style="display:flex; flex-direction:column; gap:2px;">
       <sc-for list="{{ adminNavItems }}" as="item" hint-placeholder-count="4">
         <div onClick="{{ item.onClick }}" style="display:flex; align-items:center; gap:10px; padding:10px 10px; cursor:pointer; font-size:14px; font-weight:600; color:{{ item.color }}; background:{{ item.bg }};">
           {{ item.icon }}
@@ -71,16 +92,16 @@
       </sc-for>
     </div>
     <div style="flex:1;"></div>
-    <div onClick="{{ logout }}" style="display:flex; align-items:center; gap:10px; padding:10px 10px; cursor:pointer; font-size:13px; color:#8b8c91;">
+    <div class="admin-logout" onClick="{{ logout }}" style="display:flex; align-items:center; gap:10px; padding:10px 10px; cursor:pointer; font-size:13px; color:#8b8c91;">
       {{ iconLogOut }}<span>Log out</span>
     </div>
   </div>
 
-  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:2px solid var(--color-divider); gap:16px;">
+  <div class="admin-main" style="flex:1; min-width:0; display:flex; flex-direction:column;">
+    <div class="admin-header" style="display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:2px solid var(--color-divider); gap:16px;">
       <h2 style="margin:0;">{{ adminPageTitle }}</h2>
-      <div style="display:flex; align-items:center; gap:18px;">
-        <div style="font-size:13px; color:color-mix(in srgb, var(--color-text) 60%, transparent);">{{ currentUser.name }}</div>
+      <div class="admin-header-tools" style="display:flex; align-items:center; gap:18px;">
+        <div class="admin-user-name" style="font-size:13px; color:color-mix(in srgb, var(--color-text) 60%, transparent);">{{ currentUser.name }}</div>
         <button class="btn btn-icon btn-secondary" onClick="{{ toggleTheme }}" title="Toggle dark mode">{{ iconThemeToggle }}</button>
         <div style="position:relative;">
           <div onClick="{{ toggleNotif }}" style="cursor:pointer; position:relative; padding:6px;">
@@ -104,10 +125,10 @@
       </div>
     </div>
 
-    <div style="padding:24px 28px; flex:1; overflow:auto;">
+    <div class="admin-content" style="padding:24px 28px; flex:1; overflow:auto;">
 
     <sc-if value="{{ isDashboardView }}">
-      <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:20px; align-items:stretch;">
+      <div class="admin-dashboard-top" style="display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:20px; align-items:stretch;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;">
           <sc-for list="{{ quickTiles }}" as="q" hint-placeholder-count="4">
             <div class="card elev-sm" style="cursor:pointer; background:{{ q.bg }}; color:{{ q.fg }};" onClick="{{ q.onClick }}">
@@ -125,7 +146,7 @@
           </div>
         </sc-if>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:20px;">
+      <div class="admin-stats-grid" style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:20px;">
         <sc-for list="{{ overviewStats }}" as="s" hint-placeholder-count="8">
           <div class="card elev-sm">
             <div class="card-kicker">{{ s.label }}</div>
@@ -133,7 +154,7 @@
           </div>
         </sc-for>
       </div>
-      <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:16px; align-items:start;">
+      <div class="admin-performance-grid" style="display:grid; grid-template-columns:1.2fr 1fr; gap:16px; align-items:start;">
         <div class="card elev-sm">
           <div class="card-title" style="margin-bottom:10px;">Area performance</div>
           <sc-for list="{{ areaPerformance }}" as="a" hint-placeholder-count="6">
