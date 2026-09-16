@@ -727,11 +727,13 @@
       <div class="field" style="margin-bottom:12px;"><input class="input" placeholder="Search design number" value="{{ stockSearch }}" onChange="{{ onStockSearchChange }}"></div>
       <div style="display:flex; flex-direction:column; gap:8px;">
         <sc-for list="{{ stockRowsMobile }}" as="r" hint-placeholder-count="6">
-          <div class="card elev-sm" style="display:flex; gap:10px; align-items:center; padding:10px 12px;">
-            <image-slot id="stock-m-{{ r.design }}" src="{{ r.image }}" shape="rounded" style="width:44px;height:44px;flex:none;" placeholder="{{ r.design }}"></image-slot>
-            <div style="flex:1;">
+          <div class="card elev-sm" style="display:grid; grid-template-columns:118px 1fr; gap:12px; align-items:stretch; padding:10px 12px;">
+            <div onClick="{{ r.openPreview }}" style="cursor:pointer; min-height:150px;">
+              <image-slot id="stock-m-{{ r.design }}" src="{{ r.image }}" shape="rounded" style="width:100%;height:100%;min-height:150px;" placeholder="{{ r.design }}"></image-slot>
+            </div>
+            <div style="min-width:0; display:flex; flex-direction:column; justify-content:center;">
               <div style="font-weight:700; font-size:14px;">Design {{ r.design }}</div>
-              <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px;">
                 <div style="background:var(--color-neutral-100); padding:4px 10px; text-align:center; min-width:58px;">
                   <div style="font-size:10px; color:color-mix(in srgb, var(--color-text) 55%, transparent);">Single</div>
                   <div style="font-weight:700; font-size:14px;">{{ r.single }}</div>
@@ -753,6 +755,17 @@
           </div>
         </sc-for>
       </div>
+      <sc-if value="{{ stockPreviewOpen }}">
+        <div class="dialog-backdrop" onClick="{{ closeStockPreview }}">
+          <div class="dialog" onClick="{{ stop }}" style="max-width:440px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+              <div class="dialog-title" style="margin:0;">Design {{ stockPreview.design }}</div>
+              <button type="button" class="btn btn-ghost" onClick="{{ closeStockPreview }}">{{ iconX }}</button>
+            </div>
+            <image-slot id="stock-preview-{{ stockPreview.design }}" src="{{ stockPreview.image }}" shape="rounded" style="width:100%; height:55vh; max-height:520px;" placeholder="{{ stockPreview.design }}"></image-slot>
+          </div>
+        </div>
+      </sc-if>
     </sc-if>
 
     <sc-if value="{{ isProfileView }}">
@@ -899,7 +912,7 @@ class Component extends DCLogic {
     payoutFormOpen: false, payoutUserId: null, payoutForm: {periodStart:'', periodEnd:'', amount:'', reference:'', notes:''},
     staffPeriod: 'today',
     reportType: 'orders', reportArea: 'All',
-    bankCopied: false, stockSearch: '', theme: 'light',
+    bankCopied: false, stockSearch: '', stockPreviewDesign: null, theme: 'light',
     selectedArea: null,
     deliverDialogOrderId: null, deliverForm: {amountCollected:'', paymentMethod:'Cash', remarks:'', proofAdded:false},
     users: [
@@ -1093,6 +1106,8 @@ class Component extends DCLogic {
   setBankField = (idx, key, val) => this.setState(s=>({bankDraft: s.bankDraft.map((b,i)=> i===idx ? {...b,[key]:val} : b)}));
   saveBankDetails = () => this.setState(s=>({settings:{...s.settings, bankAccounts: s.bankDraft.map(b=>({...b}))}, bankSaved:true}));
   onStockSearchChange = (e) => this.setState({stockSearch:e.target.value});
+  openStockPreview = (design) => this.setState({stockPreviewDesign:design});
+  closeStockPreview = () => this.setState({stockPreviewDesign:null});
   toggleTheme = () => this.setState(s=>({theme: s.theme==='dark' ? 'light' : 'dark'}));
   DARK_VARS = '--color-bg:#17181a;--color-surface:#212226;--color-text:#f0eeed;--color-divider:rgba(240,238,237,0.22);--color-neutral-100:#2a2b2f;--color-neutral-200:#33343a;--color-neutral-300:#3c3e46;--color-neutral-800:#d8d6d5;--color-neutral-900:#efeceb;--color-accent-100:#3a1712;--color-accent-700:#ff9783;--color-accent-800:#ffb3a3;';
   onRateDraftChange = (e) => this.setState({rateDraft:e.target.value, rateSaved:false});
@@ -1429,8 +1444,12 @@ class Component extends DCLogic {
       iconCopy: this.ic('copy',15), bankTilesView, bankDraftView, bankSaved: s.bankSaved, saveBankDetails: this.saveBankDetails,
       stockSearch: s.stockSearch, onStockSearchChange: this.onStockSearchChange,
       stockRowsMobile: s.stock.filter(row=> !s.stockSearch || row.design.includes(s.stockSearch)).map(row=>({
-        design: row.design, image: row.image, single: row.qty['Single'], supersingle: row.qty['Supersingle / Double'], queen: row.qty['Queen'], king: row.qty['King']
+        design: row.design, image: row.image, single: row.qty['Single'], supersingle: row.qty['Supersingle / Double'], queen: row.qty['Queen'], king: row.qty['King'],
+        openPreview: () => this.openStockPreview(row.design)
       })),
+      stockPreviewOpen: !!s.stockPreviewDesign,
+      stockPreview: s.stock.find(row=>row.design===s.stockPreviewDesign) || {design:'', image:''},
+      closeStockPreview: this.closeStockPreview,
       overviewStats, areaPerformance, statusBreakdown,
       orderSearch: s.orderSearch, orderAreaFilter: s.orderAreaFilter, orderStatusFilter: s.orderStatusFilter, areas: this.areas, statusOptions,
       onOrderSearchChange: this.onOrderSearchChange, onOrderAreaFilterChange: this.onOrderAreaFilterChange, onOrderStatusFilterChange: this.onOrderStatusFilterChange,
