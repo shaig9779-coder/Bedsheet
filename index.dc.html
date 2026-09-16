@@ -870,6 +870,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
+  USER_STORAGE_KEY = 'skygo-bedsheet-users-v1';
   areas = ["Hulhumale' Phase 1","Hulhumale' Phase 2","Galholhu","Maafannu","Henveiru","Boat / Launch"];
   SIZES = ['Single','Supersingle / Double','Queen','King'];
   designs = Array.from({length:25}, (_,i)=> String(i+1).padStart(3,'0'));
@@ -1154,10 +1155,11 @@ class Component extends DCLogic {
   nu(key){ return (e)=> this.setState(s=>({newUser:{...s.newUser, [key]:e.target.value}})); }
   saveNewUser = () => {
     const n = this.state.newUser; if(!n.name) return;
-    this.setState(s=>({users:[...s.users, {id:'u'+Date.now(), name:n.name, phone:n.phone, email:n.email, role:'delivery', status:'active'}], userFormOpen:false}));
+    const user = {id:'u'+Date.now(), name:n.name, phone:n.phone, email:n.email, role:'delivery', status:'active'};
+    this.setState(s=>({users:[...s.users, user], userFormOpen:false}), () => this.persistUsers(this.state.users));
   };
-  toggleUserStatus = (userId) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status: u.status==='active'?'disabled':'active'} : u)}));
-  changeUserRole = (userId, role) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}));
+  toggleUserStatus = (userId) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status: u.status==='active'?'disabled':'active'} : u)}), () => this.persistUsers(this.state.users));
+  changeUserRole = (userId, role) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}), () => this.persistUsers(this.state.users));
   resetPassword = (userId) => this.pushNotification('Password reset link sent to ' + this.userName(userId));
 
   computeOutstanding(userId){
@@ -1191,6 +1193,15 @@ class Component extends DCLogic {
   };
 
   currentUser(){ return this.state.users.find(u=>u.id===this.state.currentUserId) || {name:'', email:'', phone:''}; }
+  componentDidMount(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(this.USER_STORAGE_KEY) || 'null');
+      if(Array.isArray(saved) && saved.length) this.setState({users:saved});
+    } catch {}
+  }
+  persistUsers = (users) => {
+    try { localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(users)); } catch {}
+  };
 
   renderVals() {
     const s = this.state;
