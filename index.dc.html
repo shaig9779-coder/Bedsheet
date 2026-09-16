@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="stylesheet" href="_ds/modernist-c81d56b4-6ec6-44b2-b60b-a612c36a0b79/styles.css">
+  <script src="./image-slot.js"></script>
+  <style>
+    body{ -webkit-tap-highlight-color: transparent; }
+    select.input{ appearance:none; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:var(--color-bg); color:var(--color-text); font-family:var(--font-body); {{ themeVarsCss }}">
+
+<sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:380px;">
+    <div style="font-family:var(--font-heading); font-weight:800; font-size:30px; margin-bottom:2px;">SKY BEDSHEET&nbsp;</div>
+    <div style="font-size:13px; color:color-mix(in srgb, var(--color-text) 60%, transparent); margin-bottom:28px;">Delivery management · Maldives</div>
+    <form onSubmit="{{ submitLogin }}" class="card elev-md" style="padding:20px;">
+      <h3 style="margin:0 0 14px;">Sign in</h3>
+      <div class="field" style="margin-bottom:12px;">
+        <label>Email</label>
+        <input class="input" type="email" placeholder="you@skygo.mv" value="{{ loginEmail }}" onChange="{{ onLoginEmailChange }}">
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Password</label>
+        <input class="input" type="password" placeholder="Any password works in this demo" value="{{ loginPassword }}" onChange="{{ onLoginPasswordChange }}">
+      </div>
+      <sc-if value="{{ loginError }}">
+        <div style="font-size:12px; color:var(--color-accent-700); margin-bottom:10px;">{{ loginError }}</div>
+      </sc-if>
+      <button type="submit" class="btn btn-primary btn-block" style="justify-content:center; margin-top:14px;">Sign in</button>
+    </form>
+    <div style="margin-top:18px;">
+      <div style="font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:color-mix(in srgb, var(--color-text) 55%, transparent); margin-bottom:8px;">Demo accounts — tap to sign in</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <sc-for list="{{ demoAccounts }}" as="acc" hint-placeholder-count="6">
+          <button onClick="{{ acc.onClick }}" class="btn btn-secondary" style="justify-content:space-between; width:100%;">
+            <span>{{ acc.name }}</span>
+            <span class="tag tag-neutral">{{ acc.roleLabel }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAdminShell }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; min-height:100vh;">
+  <div style="width:226px; flex:none; background:#14151a; display:flex; flex-direction:column; padding:20px 14px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+      <div style="width:20px; height:20px; flex:none; background:linear-gradient(135deg, var(--color-accent), #ff9783);"></div>
+      <div style="font-family:var(--font-heading); font-weight:800; font-size:20px; color:#f5f4f3;">SKYBEDSHEET</div>
+    </div>
+    <div style="font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#8b8c91; margin-bottom:20px;">{{ shellRoleLabel }}</div>
+    <div style="display:flex; flex-direction:column; gap:2px;">
+      <sc-for list="{{ adminNavItems }}" as="item" hint-placeholder-count="4">
+        <div onClick="{{ item.onClick }}" style="display:flex; align-items:center; gap:10px; padding:10px 10px; cursor:pointer; font-size:14px; font-weight:600; color:{{ item.color }}; background:{{ item.bg }};">
+          {{ item.icon }}
+          <span>{{ item.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex:1;"></div>
+    <div onClick="{{ logout }}" style="display:flex; align-items:center; gap:10px; padding:10px 10px; cursor:pointer; font-size:13px; color:#8b8c91;">
+      {{ iconLogOut }}<span>Log out</span>
+    </div>
+  </div>
+
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:2px solid var(--color-divider); gap:16px;">
+      <h2 style="margin:0;">{{ adminPageTitle }}</h2>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <div style="font-size:13px; color:color-mix(in srgb, var(--color-text) 60%, transparent);">{{ currentUser.name }}</div>
+        <button class="btn btn-icon btn-secondary" onClick="{{ toggleTheme }}" title="Toggle dark mode">{{ iconThemeToggle }}</button>
+        <div style="position:relative;">
+          <div onClick="{{ toggleNotif }}" style="cursor:pointer; position:relative; padding:6px;">
+            {{ iconBell }}
+            <sc-if value="{{ hasNotifications }}">
+              <div style="position:absolute; top:2px; right:2px; background:var(--color-accent); color:var(--color-bg); font-size:9px; min-width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center;">{{ notifCount }}</div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ notifOpen }}">
+            <div class="card elev-lg" style="position:absolute; top:38px; right:0; width:290px; max-height:340px; overflow:auto; z-index:30; padding:0;">
+              <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="3">
+                <div style="padding:10px 14px; border-bottom:1px solid var(--color-divider); font-size:12.5px;">
+                  <div>{{ n.text }}</div>
+                  <div style="font-size:10.5px; opacity:.55; margin-top:2px;">{{ n.time }}</div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noNotifications }}"><div style="padding:16px 14px; font-size:12.5px; opacity:.6;">No notifications yet.</div></sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:24px 28px; flex:1; overflow:auto;">
+
+    <sc-if value="{{ isDashboardView }}">
+      <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:20px; align-items:stretch;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;">
+          <sc-for list="{{ quickTiles }}" as="q" hint-placeholder-count="4">
+            <div class="card elev-sm" style="cursor:pointer; background:{{ q.bg }}; color:{{ q.fg }};" onClick="{{ q.onClick }}">
+              {{ q.icon }}
+              <div class="card-title" style="font-size:15px; color:{{ q.fg }};">{{ q.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ showOutstandingCard }}">
+          <div class="card elev-md" style="background:linear-gradient(135deg, #6d28d9, #9333ea); color:#fff;">
+            <div class="card-kicker" style="color:#e9d5ff;">Outstanding</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:26px; margin:6px 0;">{{ totalOutstandingDisplay }}</div>
+            <div style="font-size:12.5px; opacity:.9; margin-bottom:12px;">Owed to delivery staff</div>
+            <button class="btn" style="background:#fff; color:#6d28d9;" onClick="{{ goPayments }}">Review payments</button>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:20px;">
+        <sc-for list="{{ overviewStats }}" as="s" hint-placeholder-count="8">
+          <div class="card elev-sm">
+            <div class="card-kicker">{{ s.label }}</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:28px;">{{ s.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:16px; align-items:start;">
+        <div class="card elev-sm">
+          <div class="card-title" style="margin-bottom:10px;">Area performance</div>
+          <sc-for list="{{ areaPerformance }}" as="a" hint-placeholder-count="6">
+            <div style="margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;"><span>{{ a.area }}</span><span class="text-muted">{{ a.completed }}/{{ a.total }} completed</span></div>
+              <div style="height:8px; background:var(--color-neutral-200); position:relative;">
+                <div style="position:absolute; inset:0; width:{{ a.pct }}%; background:var(--color-accent);"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div class="card elev-sm">
+          <div class="card-title" style="margin-bottom:10px;">Delivery status</div>
+          <sc-for list="{{ statusBreakdown }}" as="b" hint-placeholder-count="6">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:13px;">
+              {{ b.icon }}
+              <span style="flex:1;">{{ b.label }}</span>
+              <span style="font-weight:700;">{{ b.count }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOrdersView }}">
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center;">
+        <input class="input" style="max-width:260px;" type="text" placeholder="Search order #, customer, phone, rider..." value="{{ orderSearch }}" onChange="{{ onOrderSearchChange }}">
+        <select class="input" style="max-width:190px;" value="{{ orderAreaFilter }}" onChange="{{ onOrderAreaFilterChange }}">
+          <option value="All">All areas</option>
+          <sc-for list="{{ areas }}" as="ar" hint-placeholder-count="6"><option value="{{ ar }}">{{ ar }}</option></sc-for>
+        </select>
+        <select class="input" style="max-width:190px;" value="{{ orderStatusFilter }}" onChange="{{ onOrderStatusFilterChange }}">
+          <option value="All">All statuses</option>
+          <sc-for list="{{ statusOptions }}" as="so" hint-placeholder-count="6"><option value="{{ so.value }}">{{ so.label }}</option></sc-for>
+        </select>
+        <div style="flex:1;"></div>
+        <button class="btn btn-primary" onClick="{{ openNewOrder }}">{{ iconPlus }}New order</button>
+      </div>
+      <div class="card elev-sm" style="padding:0; overflow:auto;">
+        <table class="table">
+          <thead><tr><th>Order</th><th>Customer</th><th>Area</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th>Delivery Staff</th><th>Created by</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{ filteredOrders }}" as="o" hint-placeholder-count="6">
+              <tr style="cursor:pointer;" onClick="{{ o.openDetail }}">
+                <td>{{ o.orderNumber }}</td>
+                <td>{{ o.customerName }}</td>
+                <td><span style="display:inline-block; padding:2px 8px; font-size:11px; font-weight:700; background:{{ o.areaBg }}; color:{{ o.areaFg }};">{{ o.area }}</span></td>
+                <td style="font-size:12px; max-width:180px;">{{ o.itemsSummary }}</td>
+                <td>{{ o.amountDisplay }}</td>
+                <td><span class="tag {{ o.payTagClass }}">{{ o.paymentStatus }}</span></td>
+                <td><span class="tag {{ o.statusTagClass }}">{{ o.statusLabel }}</span></td>
+                <td>{{ o.riderName }}</td>
+                <td style="font-size:12px;">{{ o.createdBy }}</td>
+                <td><button class="btn btn-ghost" style="font-size:12px;" onClick="{{ o.deleteRow }}">{{ iconTrash }}</button></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ noFilteredOrders }}"><div style="padding:24px; font-size:13px; opacity:.6;">No orders match these filters.</div></sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isConfirmationsView }}">
+      <div style="font-size:13px; opacity:.7; margin-bottom:14px;">Deliveries marked complete by riders, waiting for your approval.</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <sc-for list="{{ pendingConfirmationOrders }}" as="o" hint-placeholder-count="3">
+          <div class="card elev-sm">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+              <div>
+                <div class="card-title">{{ o.orderNumber }} · {{ o.customerName }}</div>
+                <div class="card-meta">{{ o.area }} · {{ o.itemsSummary }} · delivered by {{ o.riderName }} at {{ o.deliveredAt }}</div>
+              </div>
+              <span class="tag tag-accent">{{ iconHourglass }} Awaiting approval</span>
+            </div>
+            <div class="hr" style="margin:10px 0;"></div>
+            <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; font-size:13px;">
+              <div><div class="text-muted" style="font-size:11px;">Amount collected</div><div style="font-weight:700;">{{ o.amountCollectedDisplay }}</div></div>
+              <div><div class="text-muted" style="font-size:11px;">Payment method</div><div style="font-weight:700;">{{ o.paymentMethod }}</div></div>
+              <div><div class="text-muted" style="font-size:11px;">Proof of delivery</div><div style="font-weight:700;">{{ o.proofLabel }}</div></div>
+              <div><div class="text-muted" style="font-size:11px;">Earnings if confirmed</div><div style="font-weight:700;">{{ o.earningsDisplay }}</div></div>
+            </div>
+            <sc-if value="{{ o.remarksDelivery }}"><div style="font-size:13px; margin-top:8px;"><span class="text-muted">Remarks: </span>{{ o.remarksDelivery }}</div></sc-if>
+            <div style="display:flex; gap:10px; margin-top:14px;">
+              <button class="btn btn-primary" onClick="{{ o.confirm }}">{{ iconCheck }}Confirm delivery</button>
+              <button class="btn btn-secondary" onClick="{{ o.reject }}">{{ iconX }}Reject · return to pending</button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noConfirmationOrders }}"><div class="card elev-sm" style="font-size:13px; opacity:.6;">Nothing waiting for approval right now.</div></sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStaffView }}">
+      <div class="seg" style="margin-bottom:16px;">
+        <sc-for list="{{ periodOptions }}" as="p" hint-placeholder-count="3">
+          <label class="seg-opt"><input type="radio" name="period" checked="{{ p.checked }}" onChange="{{ p.onClick }}">{{ p.label }}</label>
+        </sc-for>
+      </div>
+      <div class="card elev-sm" style="padding:0; overflow:auto; margin-bottom:24px;">
+        <table class="table">
+          <thead><tr><th>Delivery Staff</th><th>Deliveries completed</th><th>Sets delivered</th><th>Confirmed</th><th>Failed</th><th>Earnings</th><th>Paid (all time)</th><th>Outstanding (all time)</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ staffPerformance }}" as="r" hint-placeholder-count="4">
+              <tr>
+                <td>{{ r.name }}</td>
+                <td>{{ r.completed }}</td>
+                <td>{{ r.sets }}</td>
+                <td>{{ r.confirmed }}</td>
+                <td>{{ r.failed }}</td>
+                <td>{{ r.earningsDisplay }}</td>
+                <td>{{ r.paidDisplay }}</td>
+                <td style="font-weight:700;">{{ r.outstandingDisplay }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">Delivery Staff</div>
+        <button class="btn btn-secondary" onClick="{{ openUserForm }}">{{ iconPlus }}Add delivery staff</button>
+      </div>
+      <div class="card elev-sm" style="padding:0; overflow:auto;">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{ manageableUsers }}" as="u" hint-placeholder-count="4">
+              <tr>
+                <td>{{ u.name }}</td>
+                <td>{{ u.phone }}</td>
+                <td>{{ u.email }}</td>
+                <td>
+                  <select class="input" style="min-height:30px; padding:2px 6px; font-size:12px;" value="{{ u.role }}" onChange="{{ u.onRoleChange }}">
+                    <option value="delivery">Delivery Staff</option>
+                    <option value="manager">Order manager</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </td>
+                <td><span class="tag {{ u.statusTagClass }}">{{ u.statusLabel }}</span></td>
+                <td style="display:flex; gap:6px;">
+                  <button class="btn btn-ghost" style="font-size:12px;" onClick="{{ u.toggleStatus }}">{{ u.toggleLabel }}</button>
+                  <button class="btn btn-ghost" style="font-size:12px;" onClick="{{ u.resetPassword }}">Reset password</button>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isPaymentsView }}">
+      <div class="card-title" style="margin-bottom:10px;">Outstanding by rider</div>
+      <div class="card elev-sm" style="padding:0; overflow:auto; margin-bottom:24px;">
+        <table class="table">
+          <thead><tr><th>Delivery Staff</th><th>Confirmed sets</th><th>Total earnings</th><th>Amount paid</th><th>Outstanding</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{ paymentsRows }}" as="r" hint-placeholder-count="4">
+              <tr>
+                <td>{{ r.name }}</td>
+                <td>{{ r.confirmedSets }}</td>
+                <td>{{ r.earningsDisplay }}</td>
+                <td>{{ r.paidDisplay }}</td>
+                <td style="font-weight:700;">{{ r.outstandingDisplay }}</td>
+                <td><button class="btn btn-primary" style="font-size:12px;" disabled="{{ r.noneOutstanding }}" onClick="{{ r.openPayout }}">Record payout</button></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-title" style="margin-bottom:10px;">Payout history</div>
+      <div class="card elev-sm" style="padding:0; overflow:auto;">
+        <table class="table">
+          <thead><tr><th>Delivery Staff</th><th>Period</th><th>Amount</th><th>Paid on</th><th>Reference</th><th>Notes</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ payoutHistory }}" as="p" hint-placeholder-count="2">
+              <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.period }}</td>
+                <td>{{ p.amountDisplay }}</td>
+                <td>{{ p.paymentDate }}</td>
+                <td>{{ p.reference }}</td>
+                <td>{{ p.notes }}</td>
+              </tr>
+            </sc-for>
+            <sc-if value="{{ noPayouts }}"><tr><td colspan="6" style="opacity:.6;">No payouts recorded yet.</td></tr></sc-if>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isReportsView }}">
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center;">
+        <select class="input" style="max-width:220px;" value="{{ reportType }}" onChange="{{ onReportTypeChange }}">
+          <option value="orders">Orders</option>
+          <option value="deliveries">Deliveries</option>
+          <option value="staff">Delivery staff earnings</option>
+          <option value="payouts">Payouts</option>
+          <option value="area">Area performance</option>
+        </select>
+        <select class="input" style="max-width:190px;" value="{{ reportArea }}" onChange="{{ onReportAreaChange }}">
+          <option value="All">All areas</option>
+          <sc-for list="{{ areas }}" as="ar" hint-placeholder-count="6"><option value="{{ ar }}">{{ ar }}</option></sc-for>
+        </select>
+        <div style="flex:1;"></div>
+        <button class="btn btn-secondary" onClick="{{ exportReport }}">{{ iconBarChart }}Export CSV</button>
+      </div>
+      <div class="card elev-sm" style="padding:0; overflow:auto;">
+        <table class="table">
+          <thead><tr>
+            <sc-for list="{{ reportColumns }}" as="c" hint-placeholder-count="5"><th>{{ c }}</th></sc-for>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ reportRows }}" as="row" hint-placeholder-count="5">
+              <tr>
+                <sc-for list="{{ row }}" as="cell" hint-placeholder-count="5"><td>{{ cell }}</td></sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStockView }}">
+      <div style="font-size:13px; opacity:.7; margin-bottom:14px; max-width:640px;">Manually tracked stock by design and size — export to Excel/Sheets to work offline, then re-import the CSV to sync it back here.</div>
+      <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center;">
+        <button class="btn btn-secondary" onClick="{{ exportStockCSV }}">{{ iconBarChart }}Export CSV</button>
+        <label class="btn btn-secondary" style="cursor:pointer;">{{ iconPlus }}Import CSV<input type="file" accept=".csv" onChange="{{ importStockCSV }}" style="display:none;"></label>
+      </div>
+      <div class="card elev-sm" style="padding:0; overflow:auto; max-height:70vh;">
+        <table class="table">
+          <thead><tr><th>Design</th><th>Single</th><th>Supersingle / Double</th><th>Queen</th><th>King</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ stockRows }}" as="r" hint-placeholder-count="8">
+              <tr>
+                <td style="font-weight:700; display:flex; align-items:center; gap:8px;"><image-slot id="stock-{{ r.design }}" src="{{ r.image }}" shape="rounded" style="width:36px;height:36px;flex:none;" placeholder="{{ r.design }}"></image-slot>{{ r.design }}</td>
+                <td><input class="input" type="number" min="0" style="width:80px; min-height:30px; padding:2px 6px;" value="{{ r.single }}" onChange="{{ r.onSingle }}"></td>
+                <td><input class="input" type="number" min="0" style="width:80px; min-height:30px; padding:2px 6px;" value="{{ r.supersingle }}" onChange="{{ r.onSupersingle }}"></td>
+                <td><input class="input" type="number" min="0" style="width:80px; min-height:30px; padding:2px 6px;" value="{{ r.queen }}" onChange="{{ r.onQueen }}"></td>
+                <td><input class="input" type="number" min="0" style="width:80px; min-height:30px; padding:2px 6px;" value="{{ r.king }}" onChange="{{ r.onKing }}"></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSettingsView }}">
+      <div class="card elev-sm" style="max-width:420px; margin-bottom:16px;">
+        <div class="card-title">Delivery rate</div>
+        <div class="card-body" style="margin-bottom:12px;">Paid per bedsheet set successfully delivered and confirmed.</div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>MVR per set</label>
+          <input class="input" type="number" min="0" value="{{ rateDraft }}" onChange="{{ onRateDraftChange }}">
+        </div>
+        <div style="font-size:12px; opacity:.65; margin-bottom:14px;">Changing this only affects deliveries confirmed from now on — historical confirmed deliveries keep the rate that applied when they were made.</div>
+        <button class="btn btn-primary" onClick="{{ saveRate }}">Save rate</button>
+        <sc-if value="{{ rateSaved }}"><div style="font-size:12px; color:var(--color-accent-700); margin-top:8px;">Rate updated to MVR {{ settings.ratePerSet }} per set.</div></sc-if>
+      </div>
+      <div class="card elev-sm" style="max-width:420px; margin-bottom:16px;">
+        <div class="card-title">Bank account details</div>
+        <div class="card-body" style="margin-bottom:12px;">Shown to delivery staff so they can share it with customers paying by bank transfer.</div>
+        <sc-for list="{{ bankDraftView }}" as="b" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ false }}"><img src="{{ b.logo }}" style="width:32px;height:32px;object-fit:contain;flex:none;"></sc-if>
+            <div style="font-weight:700; font-size:13px;">{{ b.bankName }}</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+            <div class="field"><label>MVR account number</label><input class="input" value="{{ b.mvrNumber }}" onChange="{{ b.onMvr }}"></div>
+            <div class="field"><label>USD account number</label><input class="input" value="{{ b.usdNumber }}" onChange="{{ b.onUsd }}"></div>
+          </div>
+        </sc-for>
+        <button class="btn btn-primary" onClick="{{ saveBankDetails }}">Save account details</button>
+        <sc-if value="{{ bankSaved }}"><div style="font-size:12px; color:var(--color-accent-700); margin-top:8px;">Account details updated.</div></sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDeliverView }}">
+      <sc-if value="{{ isAreasView }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;">
+          <sc-for list="{{ areaCards }}" as="a" hint-placeholder-count="6">
+            <div class="card elev-sm" style="cursor:pointer; background:{{ a.bg }};" onClick="{{ a.open }}">
+              <div class="card-title" style="font-size:15px; color:{{ a.fg }};">{{ a.area }}</div>
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:24px; margin-top:2px; color:{{ a.fg }};">{{ a.pendingCount }}</div>
+              <div class="card-meta" style="color:{{ a.fg }}; opacity:.75;">deliveries · {{ a.setsCount }} sets</div>
+              <sc-if value="{{ a.inProgressLabel }}"><div class="tag tag-outline" style="margin-top:4px;">{{ a.inProgressLabel }}</div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isAreaDetailView }}">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+          <div onClick="{{ goDeliveries }}" style="cursor:pointer; padding:4px;">{{ iconArrowLeft }}</div>
+          <h3 style="margin:0;">{{ selectedArea }}</h3>
+        </div>
+        <sc-if value="{{ hasAreaInProgress }}"><div class="tag tag-outline" style="margin-bottom:10px;">{{ areaInProgressLabel }}</div></sc-if>
+        <sc-if value="{{ areaHasUnclaimedPending }}"><button class="btn btn-primary" style="margin-bottom:14px;" onClick="{{ claimWholeArea }}">Claim this whole area</button></sc-if>
+        <div style="max-width:460px; margin-bottom:14px;">
+          <sc-for list="{{ bankTilesView }}" as="b" hint-placeholder-count="4">
+            <div class="card elev-sm" style="margin-bottom:8px; background:var(--color-accent-100); display:flex; align-items:center; gap:10px;">
+              <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ false }}"><img src="{{ b.logo }}" style="width:32px;height:32px;object-fit:contain;flex:none;"></sc-if>
+              <div style="flex:1;">
+                <div style="font-size:13px; font-weight:700;">{{ b.bankName }}</div>
+                <div class="card-meta">{{ b.currency }} {{ b.number }}</div>
+              </div>
+              <button class="btn btn-secondary" style="flex:none;" onClick="{{ b.copy }}">{{ iconCopy }}{{ b.copyLabel }}</button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px;">
+          <sc-for list="{{ areaDetailOrders }}" as="o" hint-placeholder-count="3">
+            <div class="card elev-sm">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div class="card-title" style="font-size:16px;">{{ o.customerName }}</div>
+                <span class="tag {{ o.statusTagClass }}">{{ o.statusLabel }}</span>
+              </div>
+              <a href="{{ o.telHref }}" style="font-size:14px; margin-top:2px; display:inline-block;">{{ o.phone }}</a>
+              <div class="card-meta" style="margin-top:4px;">{{ o.address }}</div>
+              <div style="font-size:13px; margin-top:6px;"><span class="text-muted">Items: </span>{{ o.itemsSummary }}</div>
+              <div style="display:flex; gap:14px; margin-top:8px; font-size:13px;">
+                <div><span class="text-muted">Collect: </span><strong>{{ o.amountDisplay }}</strong></div>
+                <span class="tag {{ o.payTagClass }}">{{ o.paymentStatus }}</span>
+              </div>
+              <sc-if value="{{ o.notes }}"><div style="font-size:12.5px; margin-top:6px;"><span class="text-muted">Notes: </span>{{ o.notes }}</div></sc-if>
+              <sc-if value="{{ o.claimedByOther }}"><div class="tag tag-neutral" style="margin-top:8px;">Claimed by {{ o.riderName }}</div></sc-if>
+              <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                <a href="{{ o.telHref }}" class="btn btn-secondary" style="text-decoration:none;">{{ iconPhone }}Call</a>
+                <sc-if value="{{ o.hasLocation }}"><a href="{{ o.locationUrl }}" target="_blank" class="btn btn-secondary" style="text-decoration:none;">{{ iconMapPin }}Open location</a></sc-if>
+                <sc-if value="{{ o.canClaim }}"><button class="btn btn-primary" onClick="{{ o.claim }}">Claim delivery</button></sc-if>
+                <sc-if value="{{ o.canDeliver }}"><button class="btn btn-primary" onClick="{{ o.openDeliver }}">Mark delivered</button></sc-if>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noAreaOrders }}"><div class="card elev-sm" style="font-size:13px; opacity:.6;">No outstanding deliveries here right now.</div></sc-if>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ newOrderOpen }}">
+    <div class="dialog-backdrop" onClick="{{ closeNewOrder }}">
+      <div class="dialog" style="max-width:600px; max-height:88vh; overflow:auto;" onClick="{{ stop }}">
+        <div class="dialog-title">New order</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="field"><label>Customer name</label><input class="input" value="{{ newOrder.customerName }}" onChange="{{ onNF_customerName }}"></div>
+          <div class="field"><label>Phone number</label><input class="input" type="tel" value="{{ newOrder.phone }}" onChange="{{ onNF_phone }}"></div>
+          <div class="field"><label>Delivery area</label>
+            <select class="input" value="{{ newOrder.area }}" onChange="{{ onNF_area }}">
+              <sc-for list="{{ areas }}" as="ar" hint-placeholder-count="6"><option value="{{ ar }}">{{ ar }}</option></sc-for>
+            </select>
+          </div>
+          <div class="field"><label>Order amount (MVR)</label><input class="input" type="number" min="0" value="{{ newOrder.amount }}" onChange="{{ onNF_amount }}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Address</label><input class="input" value="{{ newOrder.address }}" onChange="{{ onNF_address }}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Google Maps link (optional)</label><input class="input" type="url" placeholder="https://maps.google.com/..." value="{{ newOrder.locationUrl }}" onChange="{{ onNF_locationUrl }}"></div>
+
+          <div style="grid-column:1/-1;">
+            <label style="display:block; font-size:12px; margin-bottom:5px; color:color-mix(in srgb, var(--color-text) 70%, transparent);">Order items (design &amp; size)</label>
+            <sc-for list="{{ newOrderItems }}" as="it" hint-placeholder-count="2">
+              <div style="display:flex; gap:8px; margin-bottom:6px; align-items:center;">
+                <input class="input" style="flex:1;" placeholder="Design e.g. 058" value="{{ it.design }}" onChange="{{ it.onDesign }}">
+                <select class="input" style="flex:1;" value="{{ it.size }}" onChange="{{ it.onSize }}">
+                  <option>Single</option><option>Supersingle / Double</option><option>Queen</option><option>King</option>
+                </select>
+                <input class="input" type="number" min="1" style="width:64px;" value="{{ it.qty }}" onChange="{{ it.onQty }}">
+                <button type="button" class="btn btn-ghost" onClick="{{ it.remove }}">{{ iconX }}</button>
+              </div>
+            </sc-for>
+            <button type="button" class="btn btn-secondary" onClick="{{ addNewOrderItem }}">{{ iconPlus }}Add item</button>
+          </div>
+
+          <div class="field"><label>Payment method</label>
+            <select class="input" value="{{ newOrder.paymentMethod }}" onChange="{{ onNF_paymentMethod }}">
+              <option>Cash</option><option>Bank Transfer</option><option>Paid Online</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label>Payment status</label>
+            <select class="input" value="{{ newOrder.paymentStatus }}" onChange="{{ onNF_paymentStatus }}">
+              <option>Unpaid</option><option>Paid</option>
+            </select>
+          </div>
+          <div class="field"><label>Preferred delivery date</label><input class="input" type="date" value="{{ newOrder.deliveryDate }}" onChange="{{ onNF_deliveryDate }}"></div>
+          <div class="field"><label>Preferred delivery time</label><input class="input" type="text" placeholder="e.g. 2:00-4:00 PM" value="{{ newOrder.deliveryTime }}" onChange="{{ onNF_deliveryTime }}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Delivery notes</label><textarea class="input" rows="2" value="{{ newOrder.notes }}" onChange="{{ onNF_notes }}"></textarea></div>
+        </div>
+        <sc-if value="{{ newOrderError }}"><div style="font-size:12px; color:var(--color-accent-700);">{{ newOrderError }}</div></sc-if>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ closeNewOrder }}">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ saveNewOrder }}">Save order</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ orderDetailOpen }}">
+    <div class="dialog-backdrop" onClick="{{ closeOrderDetail }}">
+      <div class="dialog" style="max-width:560px; max-height:86vh; overflow:auto;" onClick="{{ stop }}">
+        <div class="dialog-title">{{ selectedOrder.orderNumber }} · {{ selectedOrder.customerName }}</div>
+        <div style="display:flex; gap:8px; margin:-4px 0 6px;"><span class="tag {{ selectedOrder.statusTagClass }}">{{ selectedOrder.statusLabel }}</span><span class="tag {{ selectedOrder.payTagClass }}">{{ selectedOrder.paymentStatus }}</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px;">
+          <div><span class="text-muted">Phone: </span>{{ selectedOrder.phone }}</div>
+          <div><span class="text-muted">Area: </span>{{ selectedOrder.area }}</div>
+          <div style="grid-column:1/-1;"><span class="text-muted">Address: </span>{{ selectedOrder.address }}</div>
+          <div style="grid-column:1/-1;"><span class="text-muted">Items: </span>{{ selectedOrder.itemsSummary }}</div>
+          <div><span class="text-muted">Amount: </span>{{ selectedOrder.amountDisplay }}</div>
+          <div><span class="text-muted">Payment: </span>{{ selectedOrder.paymentMethod }}</div>
+          <div><span class="text-muted">Delivery staff: </span>{{ selectedOrder.riderName }}</div>
+          <div><span class="text-muted">Created by: </span>{{ selectedOrder.createdBy }}</div>
+          <div><span class="text-muted">Order date: </span>{{ selectedOrder.orderDate }}</div>
+          <div><span class="text-muted">Preferred: </span>{{ selectedOrder.deliveryDate }} {{ selectedOrder.deliveryTime }}</div>
+          <div style="grid-column:1/-1;"><span class="text-muted">Notes: </span>{{ selectedOrder.notes }}</div>
+        </div>
+        <div class="hr" style="margin:12px 0;"></div>
+        <div class="card-title" style="font-size:14px;">Activity history</div>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; margin:8px 0;">
+          <sc-for list="{{ selectedOrder.activityLog }}" as="a" hint-placeholder-count="3">
+            <div><span class="text-muted">{{ a.time }} — </span>{{ a.action }}</div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ isFullAdmin }}">
+          <div class="hr" style="margin:12px 0;"></div>
+          <div style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+            <div class="field" style="flex:1; min-width:160px;"><label>Reassign to</label>
+              <select class="input" value="{{ reassignSelection }}" onChange="{{ onReassignChange }}">
+                <option value="">Unassigned</option>
+                <sc-for list="{{ activeRiders }}" as="u" hint-placeholder-count="4"><option value="{{ u.id }}">{{ u.name }}</option></sc-for>
+              </select>
+            </div>
+            <button class="btn btn-secondary" onClick="{{ applyReassign }}">Apply</button>
+            <button class="btn btn-secondary" onClick="{{ releaseSelectedOrder }}" disabled="{{ selectedOrder.cannotRelease }}">Release claim</button>
+            <button class="btn btn-secondary" onClick="{{ cancelSelectedOrder }}" disabled="{{ selectedOrder.cannotCancel }}">Cancel order</button>
+          </div>
+        </sc-if>
+        <div class="dialog-actions">
+          <button class="btn btn-ghost" onClick="{{ deleteSelectedOrder }}">{{ iconTrash }}Delete order</button>
+          <div style="flex:1;"></div>
+          <button class="btn btn-secondary" onClick="{{ closeOrderDetail }}">Close</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ userFormOpen }}">
+    <div class="dialog-backdrop" onClick="{{ closeUserForm }}">
+      <div class="dialog" onClick="{{ stop }}">
+        <div class="dialog-title">Add delivery staff</div>
+        <div class="field"><label>Full name</label><input class="input" value="{{ newUser.name }}" onChange="{{ onNU_name }}"></div>
+        <div class="field"><label>Phone</label><input class="input" value="{{ newUser.phone }}" onChange="{{ onNU_phone }}"></div>
+        <div class="field"><label>Email</label><input class="input" value="{{ newUser.email }}" onChange="{{ onNU_email }}"></div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ closeUserForm }}">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ saveNewUser }}">Create user</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ payoutFormOpen }}">
+    <div class="dialog-backdrop" onClick="{{ closePayoutForm }}">
+      <div class="dialog" onClick="{{ stop }}">
+        <div class="dialog-title">Record payout · {{ payoutUserName }}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="field"><label>Period start</label><input class="input" type="date" value="{{ payoutForm.periodStart }}" onChange="{{ onPF_periodStart }}"></div>
+          <div class="field"><label>Period end</label><input class="input" type="date" value="{{ payoutForm.periodEnd }}" onChange="{{ onPF_periodEnd }}"></div>
+          <div class="field"><label>Amount (MVR)</label><input class="input" type="number" value="{{ payoutForm.amount }}" onChange="{{ onPF_amount }}"></div>
+          <div class="field"><label>Payment reference</label><input class="input" value="{{ payoutForm.reference }}" onChange="{{ onPF_reference }}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Notes</label><textarea class="input" rows="2" value="{{ payoutForm.notes }}" onChange="{{ onPF_notes }}"></textarea></div>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ closePayoutForm }}">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ savePayout }}">Mark as paid</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDelivery }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh; display:flex; flex-direction:column; max-width:520px; margin:0 auto; position:relative;">
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:2px solid var(--color-divider); position:sticky; top:0; background:var(--color-bg); z-index:10; gap:10px;">
+    <div style="flex:1;">
+      <div style="font-family:var(--font-heading); font-weight:800; font-size:18px;">Skygo</div>
+      <div style="font-size:11px; color:color-mix(in srgb, var(--color-text) 60%, transparent);">Hi, {{ currentUser.firstName }}</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;">
+    <button class="btn btn-secondary" onClick="{{ logout }}">{{ iconLogOut }}Logout</button>
+    <button class="btn btn-icon btn-secondary" onClick="{{ toggleTheme }}" title="Toggle dark mode">{{ iconThemeToggle }}</button>
+    <div style="position:relative;">
+      <div onClick="{{ toggleNotif }}" style="cursor:pointer; padding:8px;">
+        {{ iconBell }}
+        <sc-if value="{{ hasNotifications }}"><div style="position:absolute; top:4px; right:4px; background:var(--color-accent); color:var(--color-bg); font-size:9px; min-width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center;">{{ notifCount }}</div></sc-if>
+      </div>
+      <sc-if value="{{ notifOpen }}">
+        <div class="card elev-lg" style="position:absolute; top:44px; right:0; width:260px; max-height:300px; overflow:auto; z-index:30; padding:0;">
+          <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="3">
+            <div style="padding:10px 14px; border-bottom:1px solid var(--color-divider); font-size:12px;">{{ n.text }}<div style="font-size:10px; opacity:.55; margin-top:2px;">{{ n.time }}</div></div>
+          </sc-for>
+          <sc-if value="{{ noNotifications }}"><div style="padding:14px; font-size:12px; opacity:.6;">No notifications yet.</div></sc-if>
+        </div>
+      </sc-if>
+    </div>
+    </div>
+  </div>
+
+  <div style="flex:1; padding:16px; padding-bottom:100px; overflow:auto;">
+
+    <sc-if value="{{ isHomeView }}">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+        <sc-for list="{{ homeStats }}" as="s" hint-placeholder-count="6">
+          <div class="card elev-sm">
+            <div class="card-kicker">{{ s.label }}</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:26px;">{{ s.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <button class="btn btn-primary btn-block" style="justify-content:center; margin-top:10px;" onClick="{{ goDeliveries }}">{{ iconPackage }}Browse deliveries</button>
+    </sc-if>
+
+    <sc-if value="{{ isAreasView }}">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <sc-for list="{{ areaCards }}" as="a" hint-placeholder-count="6">
+          <div class="card elev-sm" style="cursor:pointer; background:{{ a.bg }};" onClick="{{ a.open }}">
+            <div class="card-title" style="font-size:15px; color:{{ a.fg }};">{{ a.area }}</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:24px; margin-top:2px; color:{{ a.fg }};">{{ a.pendingCount }}</div>
+            <div class="card-meta" style="color:{{ a.fg }}; opacity:.75;">deliveries · {{ a.setsCount }} sets</div>
+            <sc-if value="{{ a.inProgressLabel }}"><div class="tag tag-outline" style="margin-top:4px;">{{ a.inProgressLabel }}</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAreaDetailView }}">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <div onClick="{{ goDeliveries }}" style="cursor:pointer; padding:4px;">{{ iconArrowLeft }}</div>
+        <h3 style="margin:0;">{{ selectedArea }}</h3>
+      </div>
+      <sc-if value="{{ hasAreaInProgress }}"><div class="tag tag-outline" style="margin-bottom:10px;">{{ areaInProgressLabel }}</div></sc-if>
+      <sc-if value="{{ areaHasUnclaimedPending }}"><button class="btn btn-primary btn-block" style="justify-content:center; margin-bottom:14px;" onClick="{{ claimWholeArea }}">Claim this whole area</button></sc-if>
+      <div style="margin-bottom:14px;">
+        <sc-for list="{{ bankTilesView }}" as="b" hint-placeholder-count="4">
+          <div class="card elev-sm" style="margin-bottom:8px; background:var(--color-accent-100); display:flex; align-items:center; gap:10px;">
+            <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ false }}"><img src="{{ b.logo }}" style="width:32px;height:32px;object-fit:contain;flex:none;"></sc-if>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:700;">{{ b.bankName }}</div>
+              <div class="card-meta">{{ b.currency }} {{ b.number }}</div>
+            </div>
+            <button class="btn btn-secondary" style="flex:none;" onClick="{{ b.copy }}">{{ iconCopy }}{{ b.copyLabel }}</button>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <sc-for list="{{ areaDetailOrders }}" as="o" hint-placeholder-count="3">
+          <div class="card elev-sm">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div class="card-title" style="font-size:16px;">{{ o.customerName }}</div>
+              <span class="tag {{ o.statusTagClass }}">{{ o.statusLabel }}</span>
+            </div>
+            <a href="{{ o.telHref }}" style="font-size:14px; margin-top:2px; display:inline-block;">{{ o.phone }}</a>
+            <div class="card-meta" style="margin-top:4px;">{{ o.address }}</div>
+            <div style="font-size:13px; margin-top:6px;"><span class="text-muted">Items: </span>{{ o.itemsSummary }}</div>
+            <div style="display:flex; gap:14px; margin-top:8px; font-size:13px;">
+              <div><span class="text-muted">Collect: </span><strong>{{ o.amountDisplay }}</strong></div>
+              <span class="tag {{ o.payTagClass }}">{{ o.paymentStatus }}</span>
+            </div>
+            <sc-if value="{{ o.notes }}"><div style="font-size:12.5px; margin-top:6px;"><span class="text-muted">Notes: </span>{{ o.notes }}</div></sc-if>
+            <sc-if value="{{ o.claimedByOther }}"><div class="tag tag-neutral" style="margin-top:8px;">Claimed by {{ o.riderName }}</div></sc-if>
+            <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+              <a href="{{ o.telHref }}" class="btn btn-secondary" style="text-decoration:none;">{{ iconPhone }}Call</a>
+              <sc-if value="{{ o.hasLocation }}"><a href="{{ o.locationUrl }}" target="_blank" class="btn btn-secondary" style="text-decoration:none;">{{ iconMapPin }}Open location</a></sc-if>
+              <sc-if value="{{ o.canClaim }}"><button class="btn btn-primary" onClick="{{ o.claim }}">Claim delivery</button></sc-if>
+              <sc-if value="{{ o.canDeliver }}"><button class="btn btn-primary" onClick="{{ o.openDeliver }}">Mark delivered</button></sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noAreaOrders }}"><div class="card elev-sm" style="font-size:13px; opacity:.6;">No outstanding deliveries here right now.</div></sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isEarningsView }}">
+      <sc-for list="{{ earningsPeriods }}" as="p" hint-placeholder-count="3">
+        <div class="card elev-sm" style="margin-bottom:12px;">
+          <div class="card-kicker">{{ p.label }}</div>
+          <div style="display:flex; gap:20px; margin-top:6px;">
+            <div><div style="font-family:var(--font-heading); font-weight:800; font-size:22px;">{{ p.sets }}</div><div class="text-muted" style="font-size:11px;">Sets delivered</div></div>
+            <sc-if value="{{ p.showPotential }}"><div><div style="font-family:var(--font-heading); font-weight:800; font-size:22px;">{{ p.potentialDisplay }}</div><div class="text-muted" style="font-size:11px;">Potential</div></div></sc-if>
+            <div><div style="font-family:var(--font-heading); font-weight:800; font-size:22px; color:var(--color-accent-700);">{{ p.confirmedDisplay }}</div><div class="text-muted" style="font-size:11px;">Confirmed</div></div>
+          </div>
+        </div>
+      </sc-for>
+      <div class="card-title" style="margin:14px 0 8px;">Recent deliveries</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <sc-for list="{{ recentHistory }}" as="h" hint-placeholder-count="4">
+          <div class="card elev-sm" style="padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between;"><strong>{{ h.orderNumber }}</strong><span class="tag {{ h.statusTagClass }}">{{ h.statusLabel }}</span></div>
+            <div class="card-meta">{{ h.area }} · {{ h.itemsSummary }} · {{ h.earningsDisplay }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isHistoryView }}">
+      <div class="card-title" style="margin-bottom:8px;">All my deliveries</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <sc-for list="{{ fullHistory }}" as="h" hint-placeholder-count="6">
+          <div class="card elev-sm" style="padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between;"><strong>{{ h.orderNumber }}</strong><span class="tag {{ h.statusTagClass }}">{{ h.statusLabel }}</span></div>
+            <div class="card-meta">{{ h.area }} · {{ h.customerName }} · {{ h.itemsSummary }} · {{ h.earningsDisplay }}</div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noHistory }}"><div class="card elev-sm" style="font-size:13px; opacity:.6;">No deliveries yet.</div></sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDeliveryStockView }}">
+      <div class="field" style="margin-bottom:12px;"><input class="input" placeholder="Search design number" value="{{ stockSearch }}" onChange="{{ onStockSearchChange }}"></div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <sc-for list="{{ stockRowsMobile }}" as="r" hint-placeholder-count="6">
+          <div class="card elev-sm" style="display:flex; gap:10px; align-items:center; padding:10px 12px;">
+            <image-slot id="stock-m-{{ r.design }}" src="{{ r.image }}" shape="rounded" style="width:44px;height:44px;flex:none;" placeholder="{{ r.design }}"></image-slot>
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:14px;">Design {{ r.design }}</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                <div style="background:var(--color-neutral-100); padding:4px 10px; text-align:center; min-width:58px;">
+                  <div style="font-size:10px; color:color-mix(in srgb, var(--color-text) 55%, transparent);">Single</div>
+                  <div style="font-weight:700; font-size:14px;">{{ r.single }}</div>
+                </div>
+                <div style="background:var(--color-neutral-100); padding:4px 10px; text-align:center; min-width:58px;">
+                  <div style="font-size:10px; color:color-mix(in srgb, var(--color-text) 55%, transparent);">SS/Double</div>
+                  <div style="font-weight:700; font-size:14px;">{{ r.supersingle }}</div>
+                </div>
+                <div style="background:var(--color-neutral-100); padding:4px 10px; text-align:center; min-width:58px;">
+                  <div style="font-size:10px; color:color-mix(in srgb, var(--color-text) 55%, transparent);">Queen</div>
+                  <div style="font-weight:700; font-size:14px;">{{ r.queen }}</div>
+                </div>
+                <div style="background:var(--color-neutral-100); padding:4px 10px; text-align:center; min-width:58px;">
+                  <div style="font-size:10px; color:color-mix(in srgb, var(--color-text) 55%, transparent);">King</div>
+                  <div style="font-weight:700; font-size:14px;">{{ r.king }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProfileView }}">
+      <div class="card elev-sm">
+        <div style="width:56px; height:56px; border-radius:50%; background:var(--color-accent-100); color:var(--color-accent-700); display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:800; font-size:20px; margin-bottom:10px;">{{ currentUser.initials }}</div>
+        <div class="card-title">{{ currentUser.name }}</div>
+        <div class="card-meta" style="margin-top:4px;">{{ currentUser.phone }} · {{ currentUser.email }}</div>
+        <div class="tag tag-outline" style="margin-top:8px; width:fit-content;">Delivery Staff</div>
+      </div>
+      <div class="card-kicker" style="margin-top:14px; margin-bottom:6px;">Skygo bank accounts (for customer bank transfers)</div>
+      <sc-for list="{{ bankTilesView }}" as="b" hint-placeholder-count="4">
+        <div class="card elev-sm" style="margin-bottom:8px; background:var(--color-accent-100); display:flex; align-items:center; gap:10px;">
+          <sc-if value="{{ b.logo }}" hint-placeholder-val="{{ false }}"><img src="{{ b.logo }}" style="width:32px;height:32px;object-fit:contain;flex:none;"></sc-if>
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:700;">{{ b.bankName }}</div>
+            <div class="card-meta">{{ b.currency }} {{ b.number }}</div>
+          </div>
+          <button class="btn btn-secondary" style="flex:none;" onClick="{{ b.copy }}">{{ iconCopy }}{{ b.copyLabel }}</button>
+        </div>
+      </sc-for>
+      <button class="btn btn-secondary btn-block" style="justify-content:center; margin-top:16px;" onClick="{{ logout }}">{{ iconLogOut }}Log out</button>
+    </sc-if>
+
+  </div>
+
+  <div style="position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto; display:flex; background:var(--color-bg); border-top:2px solid var(--color-divider); z-index:20;">
+    <sc-for list="{{ deliveryNavItems }}" as="item" hint-placeholder-count="5">
+      <div onClick="{{ item.onClick }}" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 0 8px; cursor:pointer; color:{{ item.color }};">
+        {{ item.icon }}
+        <span style="font-size:11px; font-weight:600;">{{ item.label }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ deliverDialogOpen }}">
+  <div class="dialog-backdrop" onClick="{{ closeDeliverDialog }}">
+    <div class="dialog" onClick="{{ stop }}">
+      <div class="dialog-title">Confirm delivery · {{ deliverOrder.orderNumber }}</div>
+      <div class="card-meta" style="margin:-6px 0 6px;">{{ deliverOrder.customerName }} · {{ deliverOrder.itemsSummary }}</div>
+      <div class="field"><label>Amount collected (MVR)</label><input class="input" type="number" min="0" value="{{ deliverForm.amountCollected }}" onChange="{{ onDF_amount }}"></div>
+      <div class="field">
+        <label>Payment method</label>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:2px;">
+          <sc-for list="{{ paymentMethodOptions }}" as="pm" hint-placeholder-count="4">
+            <label class="radio"><input type="radio" name="dfpm" checked="{{ pm.checked }}" onChange="{{ pm.onClick }}"><span class="dot"></span>{{ pm.label }}</label>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ isBankTransferSelected }}">
+        <sc-for list="{{ bankTilesView }}" as="b" hint-placeholder-count="4">
+          <div style="font-size:12px; background:var(--color-accent-100); padding:8px 10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <span><strong>{{ b.bankName }}</strong>: {{ b.currency }} {{ b.number }}</span>
+            <button type="button" class="btn btn-ghost" style="flex:none;" onClick="{{ b.copy }}">{{ b.copyLabel }}</button>
+          </div>
+        </sc-for>
+      </sc-if>
+      <div class="field"><label>Remarks (optional)</label><textarea class="input" rows="2" value="{{ deliverForm.remarks }}" onChange="{{ onDF_remarks }}"></textarea></div>
+      <div class="field">
+        <label>Proof of delivery (optional)</label>
+        <button type="button" class="btn btn-secondary" onClick="{{ toggleProof }}">{{ iconCamera }}{{ proofButtonLabel }}</button>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDeliverDialog }}">Cancel</button>
+        <button class="btn btn-primary" onClick="{{ submitDelivered }}">Submit</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  areas = ["Hulhumale' Phase 1","Hulhumale' Phase 2","Galholhu","Maafannu","Henveiru","Boat / Launch"];
+  SIZES = ['Single','Supersingle / Double','Queen','King'];
+  designs = Array.from({length:25}, (_,i)=> String(i+1).padStart(3,'0'));
+  designImageFiles = ['01_design_147.png','02_design_140.png','03_design_149.png','04_design_142.png','05_design_120.png','06_design_103.png','07_design_141.png','08_design_114.png','09_design_100.png','10_design_70.png','11_design_145.png','12_design_136.png','13_design_135.png','14_design_133.png','15_design_130.png','16_design_121.png','17_design_116.png','18_design_107.png','19_design_105.png','20_design_146.png','21_design_134.png','22_design_128.png','23_design_125.png','24_design_117.png','25_design_108.png'];
+  AREA_COLORS = [
+    {bg:'oklch(93% 0.035 29)', fg:'oklch(32% 0.13 29)'},
+    {bg:'oklch(93% 0.035 89)', fg:'oklch(32% 0.11 89)'},
+    {bg:'oklch(93% 0.035 149)', fg:'oklch(34% 0.10 149)'},
+    {bg:'oklch(93% 0.035 209)', fg:'oklch(34% 0.09 209)'},
+    {bg:'oklch(93% 0.035 269)', fg:'oklch(36% 0.10 269)'},
+    {bg:'oklch(93% 0.035 329)', fg:'oklch(34% 0.12 329)'}
+  ];
+  areaColor(area){ const idx = this.areas.indexOf(area); return this.AREA_COLORS[idx] || {bg:'var(--color-neutral-100)', fg:'var(--color-text)'}; }
+  initialStock(){ return this.designs.map((d,i)=>({design:d, image: 'designs/'+this.designImageFiles[i], qty:{ 'Single': (i*3+5)%25, 'Supersingle / Double': (i*5+2)%20, 'Queen': (i*7+8)%30, 'King': (i*2+1)%15 }})); }
+
+  ICONS = {
+    home: [{t:'path',d:'M3 10 12 3l9 7'},{t:'path',d:'M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9'}],
+    package: [{t:'path',d:'M3 8l9-5 9 5-9 5-9-5Z'},{t:'path',d:'M3 8v9l9 5 9-5V8'},{t:'path',d:'M12 13v9'}],
+    wallet: [{t:'rect',x:2,y:6,width:20,height:14,rx:2},{t:'path',d:'M16 6V4.5A1.5 1.5 0 0 0 14.5 3h-9A1.5 1.5 0 0 0 4 4.5V6'},{t:'circle',cx:17,cy:13,r:1.4}],
+    clock: [{t:'circle',cx:12,cy:12,r:9},{t:'path',d:'M12 7v5l4 2'}],
+    user: [{t:'circle',cx:12,cy:8,r:4},{t:'path',d:'M4 21c0-4.4 3.6-6.5 8-6.5s8 2.1 8 6.5'}],
+    users: [{t:'circle',cx:9,cy:8,r:3},{t:'path',d:'M2 21c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5'},{t:'circle',cx:17,cy:8,r:2.3},{t:'path',d:'M16.2 15.3c2.6.5 4.3 2.1 4.3 4.2'}],
+    check: [{t:'path',d:'M4 12.5 9 17.5 20 6.5'}],
+    x: [{t:'path',d:'M6 6l12 12'},{t:'path',d:'M18 6L6 18'}],
+    phone: [{t:'path',d:'M6 3.5h3.2L10.7 8 8.6 9.6a11 11 0 0 0 5.8 5.8l1.6-2.1 4.5 1.5V18a1.5 1.5 0 0 1-1.5 1.5C10.8 19.5 4.5 13.2 4.5 5.5A1.5 1.5 0 0 1 6 3.5Z'}],
+    mapPin: [{t:'path',d:'M12 21s7-6.7 7-11.5A7 7 0 1 0 5 9.5C5 14.3 12 21 12 21Z'},{t:'circle',cx:12,cy:9.5,r:2.6}],
+    search: [{t:'circle',cx:11,cy:11,r:7},{t:'path',d:'M21 21l-4.3-4.3'}],
+    bell: [{t:'path',d:'M6 10.5a6 6 0 1 1 12 0c0 3.7 1.4 5.2 1.4 5.2H4.6S6 14.2 6 10.5Z'},{t:'path',d:'M9.5 18.7a2.5 2.5 0 0 0 5 0'}],
+    plus: [{t:'path',d:'M12 5v14'},{t:'path',d:'M5 12h14'}],
+    image: [{t:'rect',x:3,y:4,width:18,height:16,rx:2},{t:'circle',cx:9,cy:10,r:1.5},{t:'path',d:'M21 17l-5-5-4 4-2-2-5 5'}],
+    arrowLeft: [{t:'path',d:'M19 12H5'},{t:'path',d:'M12 19l-7-7 7-7'}],
+    logOut: [{t:'path',d:'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4'},{t:'path',d:'M10 8l-4 4 4 4'},{t:'path',d:'M14 12H4'}],
+    barChart: [{t:'path',d:'M4 20V11'},{t:'path',d:'M12 20V4'},{t:'path',d:'M20 20v-7'},{t:'path',d:'M2 20h20'}],
+    alertTriangle: [{t:'path',d:'M12 4 2 20h20L12 4Z'},{t:'path',d:'M12 10v4'}],
+    truck: [{t:'rect',x:1,y:7,width:13,height:9},{t:'path',d:'M14 10h4l3 3v3h-7'},{t:'circle',cx:5.5,cy:18,r:1.6},{t:'circle',cx:17.5,cy:18,r:1.6}],
+    hourglass: [{t:'path',d:'M6 3h12'},{t:'path',d:'M6 21h12'},{t:'path',d:'M7 3c0 5 5 6 5 9s-5 4-5 9'},{t:'path',d:'M17 3c0 5-5 6-5 9s5 4 5 9'}],
+    camera: [{t:'path',d:'M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z'},{t:'circle',cx:12,cy:13.5,r:3.4}],
+    trash: [{t:'path',d:'M4 7h16'},{t:'path',d:'M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7'},{t:'path',d:'M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13'}],
+    grid: [{t:'rect',x:3,y:3,width:8,height:8},{t:'rect',x:13,y:3,width:8,height:8},{t:'rect',x:3,y:13,width:8,height:8},{t:'rect',x:13,y:13,width:8,height:8}],
+    copy: [{t:'rect',x:9,y:9,width:11,height:11,rx:1.5},{t:'path',d:'M5 15V5a1 1 0 0 1 1-1h10'}],
+    sun: [{t:'circle',cx:12,cy:12,r:4},{t:'path',d:'M12 2v3'},{t:'path',d:'M12 19v3'},{t:'path',d:'M4.2 4.2l2.1 2.1'},{t:'path',d:'M17.7 17.7l2.1 2.1'},{t:'path',d:'M2 12h3'},{t:'path',d:'M19 12h3'},{t:'path',d:'M4.2 19.8l2.1-2.1'},{t:'path',d:'M17.7 6.3l2.1-2.1'}],
+    moon: [{t:'path',d:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z'}]
+  };
+
+  ic(name, size) {
+    size = size || 18;
+    const specs = this.ICONS[name] || [];
+    return React.createElement('svg', {width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+      specs.map((p,i) => React.createElement(p.t, {key:i,d:p.d,cx:p.cx,cy:p.cy,r:p.r,x:p.x,y:p.y,width:p.width,height:p.height,rx:p.rx})));
+  }
+
+  state = {
+    role: null, currentUserId: null,
+    loginEmail: '', loginPassword: '', loginError: '',
+    notifOpen: false,
+    notifications: [
+      {id:1, text:"Delivery SG-1048 marked delivered by Ahmed \u2014 awaiting confirmation", time:'11:30'},
+      {id:2, text:"Order SG-1047 added to Boat / Launch", time:'09:55'},
+      {id:3, text:"Delivery SG-1044 confirmed by Admin", time:'10:45'}
+    ],
+    settings: { ratePerSet: 25, bankAccounts: [
+      {id:'bml', bankName:'Bank of Maldives (BML)', accountName:'Skygo International Pvt Ltd', mvrNumber:'7730000123456', usdNumber:'7730000123457'},
+      {id:'mib', bankName:'Maldives Islamic Bank (MIB)', accountName:'Skygo International Pvt Ltd', mvrNumber:'90012345601', usdNumber:'90012345602'}
+    ]},
+    rateDraft: 25, rateSaved: false,
+    bankDraft: [
+      {id:'bml', bankName:'Bank of Maldives (BML)', accountName:'Skygo International Pvt Ltd', mvrNumber:'7730000123456', usdNumber:'7730000123457'},
+      {id:'mib', bankName:'Maldives Islamic Bank (MIB)', accountName:'Skygo International Pvt Ltd', mvrNumber:'90012345601', usdNumber:'90012345602'}
+    ], bankSaved: false, bankCopiedId: null,
+    orderSearch: '', orderAreaFilter: 'All', orderStatusFilter: 'All',
+    adminView: 'dashboard', deliveryView: 'home',
+    newOrderOpen: false, newOrder: null, newOrderError: '',
+    selectedOrderId: null, orderDetailOpen: false, reassignSelection: '',
+    userFormOpen: false, newUser: {name:'', phone:'', email:''},
+    payoutFormOpen: false, payoutUserId: null, payoutForm: {periodStart:'', periodEnd:'', amount:'', reference:'', notes:''},
+    staffPeriod: 'today',
+    reportType: 'orders', reportArea: 'All',
+    bankCopied: false, stockSearch: '', theme: 'light',
+    selectedArea: null,
+    deliverDialogOrderId: null, deliverForm: {amountCollected:'', paymentMethod:'Cash', remarks:'', proofAdded:false},
+    users: [
+      {id:'u-admin', name:'Aishath Waheeda', role:'admin', email:'admin@skygo.mv', phone:'+960 771-0001', status:'active'},
+      {id:'u-admin2', name:'Ismail Shaig', role:'admin', email:'shaig9779@gmail.com', phone:'+960 9139993', status:'active'},
+      {id:'u-mgr', name:'Hassan Ali', role:'manager', email:'manager@skygo.mv', phone:'+960 775-6789', status:'active'},
+      {id:'u1', name:'Ahmed Rasheed', role:'delivery', email:'ahmed@skygo.mv', phone:'+960 771-2345', status:'active'},
+      {id:'u2', name:'Fathimath Nazly', role:'delivery', email:'fathimath@skygo.mv', phone:'+960 772-3456', status:'active'},
+      {id:'u3', name:'Ibrahim Shafiu', role:'delivery', email:'ibrahim@skygo.mv', phone:'+960 773-4567', status:'active'},
+      {id:'u4', name:'Aminath Hassan', role:'delivery', email:'aminath@skygo.mv', phone:'+960 774-5678', status:'active'}
+    ],
+    orders: [
+      {id:'o1', orderNumber:'SG-1041', area:"Hulhumale' Phase 1", customerName:'Mohamed Rilwan', phone:'+9607712345', address:'Block 12, Flat 4B, Hulhumale', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+1', items:[{design:'058',size:'Single',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'Call before arriving', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'2:00-4:00 PM', status:'pending', assignedUserId:null, bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'09:12',action:'Order created by Aishath Waheeda'}]},
+      {id:'o2', orderNumber:'SG-1042', area:"Hulhumale' Phase 1", customerName:'Aishath Fazna', phone:'+9607723456', address:'Building 8, Hulhumale Phase 1', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+1', items:[{design:'047',size:'Queen',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Bank Transfer', paymentStatus:'Paid', notes:'Leave with security if unavailable', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Morning', status:'out_for_delivery', assignedUserId:'u1', bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'08:50',action:'Order created by Aishath Waheeda'},{time:'09:40',action:'Claimed by Ahmed Rasheed'}]},
+      {id:'o3', orderNumber:'SG-1043', area:"Hulhumale' Phase 2", customerName:'Hassan Zareer', phone:'+9607734567', address:'Villa 21, Hulhumale Phase 2', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+2', items:[{design:'058',size:'Single',qty:1},{design:'112',size:'Queen',qty:1}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Paid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Afternoon', status:'awaiting_confirmation', assignedUserId:'u2', bucket:'today', createdBy:'Hassan Ali', deliveredAt:'11:05', amountCollected:400, remarksDelivery:'Left at door, customer paid cash', proofImage:true, ratePerSet:25, activityLog:[{time:'08:30',action:'Order created by Hassan Ali'},{time:'09:15',action:'Claimed by Fathimath Nazly'},{time:'11:05',action:'Marked delivered by Fathimath Nazly'}]},
+      {id:'o4', orderNumber:'SG-1044', area:'Galholhu', customerName:'Ibrahim Nasih', phone:'+9607745678', address:'Rose Villa, Galholhu', locationUrl:'https://maps.google.com/?q=Galholhu', items:[{design:'076',size:'Supersingle / Double',qty:3}], numberOfSets:3, amount:600, paymentMethod:'Paid Online', paymentStatus:'Paid', notes:'', orderDate:'15 Sep', deliveryDate:'2026-09-16', deliveryTime:'Morning', status:'confirmed', assignedUserId:'u3', bucket:'today', createdBy:'Aishath Waheeda', deliveredAt:'10:20', confirmedAt:'10:45', amountCollected:600, ratePerSet:25, activityLog:[{time:'08:00',action:'Order created by Aishath Waheeda'},{time:'08:45',action:'Claimed by Ibrahim Shafiu'},{time:'10:20',action:'Marked delivered by Ibrahim Shafiu'},{time:'10:45',action:'Confirmed by Admin'}]},
+      {id:'o5', orderNumber:'SG-1045', area:'Maafannu', customerName:'Mariyam Shifa', phone:'+9607756789', address:'Lily Court, Maafannu', locationUrl:'', items:[{design:'058',size:'Single',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Evening', status:'pending', assignedUserId:null, bucket:'today', createdBy:'Hassan Ali', activityLog:[{time:'09:20',action:'Order created by Hassan Ali'}]},
+      {id:'o6', orderNumber:'SG-1046', area:'Henveiru', customerName:'Ali Waheed', phone:'+9607767890', address:'Orchid Manzil, Henveiru', locationUrl:'https://maps.google.com/?q=Henveiru', items:[{design:'090',size:'Queen',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Bank Transfer', paymentStatus:'Paid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Afternoon', status:'pending', assignedUserId:null, bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'09:45',action:'Order created by Aishath Waheeda'}]},
+      {id:'o7', orderNumber:'SG-1047', area:'Boat / Launch', customerName:'Fathimath Ibrahim', phone:'+9607778901', address:'Guesthouse Villingili, jetty pickup', locationUrl:'', items:[{design:'047',size:'Queen',qty:2},{design:'058',size:'Single',qty:2}], numberOfSets:4, amount:800, paymentMethod:'Other', paymentStatus:'Unpaid', notes:'Deliver to boat jetty, call on arrival', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'10:00 AM launch', status:'out_for_delivery', assignedUserId:'u4', bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'09:00',action:'Order created by Aishath Waheeda'},{time:'10:00',action:'Claimed by Aminath Hassan'}]},
+      {id:'o8', orderNumber:'SG-1048', area:'Maafannu', customerName:'Hussain Sameer', phone:'+9607789012', address:'Sun Villa, Maafannu', locationUrl:'https://maps.google.com/?q=Maafannu', items:[{design:'058',size:'Single',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Cash', paymentStatus:'Paid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Afternoon', status:'awaiting_confirmation', assignedUserId:'u1', bucket:'today', createdBy:'Hassan Ali', deliveredAt:'11:30', amountCollected:200, remarksDelivery:'', proofImage:false, ratePerSet:25, activityLog:[{time:'09:10',action:'Order created by Hassan Ali'},{time:'09:50',action:'Claimed by Ahmed Rasheed'},{time:'11:30',action:'Marked delivered by Ahmed Rasheed'}]},
+      {id:'o9', orderNumber:'SG-1049', area:'Galholhu', customerName:'Aminath Reesham', phone:'+9607790123', address:'Blue House, Galholhu', locationUrl:'', items:[{design:'076',size:'King',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'Customer requested cancellation', orderDate:'12 Sep', deliveryDate:'2026-09-13', deliveryTime:'', status:'cancelled', assignedUserId:null, bucket:'week', createdBy:'Aishath Waheeda', activityLog:[{time:'12 Sep',action:'Order created by Aishath Waheeda'},{time:'13 Sep',action:'Cancelled by Admin'}]},
+      {id:'o10', orderNumber:'SG-1050', area:'Henveiru', customerName:'Moosa Rasheed', phone:'+9607701234', address:'Palm Residence, Henveiru', locationUrl:'https://maps.google.com/?q=Henveiru', items:[{design:'090',size:'Single',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'Customer unreachable, attempted twice', orderDate:'11 Sep', deliveryDate:'2026-09-12', deliveryTime:'', status:'failed', assignedUserId:'u3', bucket:'week', createdBy:'Aishath Waheeda', activityLog:[{time:'11 Sep',action:'Order created by Aishath Waheeda'},{time:'12 Sep',action:'Claimed by Ibrahim Shafiu'},{time:'12 Sep',action:'Marked failed by Ibrahim Shafiu'}]},
+      {id:'o11', orderNumber:'SG-1051', area:"Hulhumale' Phase 1", customerName:'Zulfa Adam', phone:'+9607712340', address:'Coral View, Hulhumale Phase 1', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+1', items:[{design:'058',size:'Single',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Paid Online', paymentStatus:'Paid', notes:'', orderDate:'10 Sep', deliveryDate:'2026-09-12', deliveryTime:'', status:'confirmed', assignedUserId:'u1', bucket:'week', createdBy:'Hassan Ali', deliveredAt:'12 Sep', confirmedAt:'12 Sep', amountCollected:400, ratePerSet:25, activityLog:[{time:'10 Sep',action:'Order created by Hassan Ali'},{time:'11 Sep',action:'Claimed by Ahmed Rasheed'},{time:'12 Sep',action:'Marked delivered by Ahmed Rasheed'},{time:'12 Sep',action:'Confirmed by Admin'}]},
+      {id:'o12', orderNumber:'SG-1052', area:"Hulhumale' Phase 2", customerName:'Ahmed Faisal', phone:'+9607723451', address:'Sea Breeze, Hulhumale Phase 2', locationUrl:'', items:[{design:'112',size:'Queen',qty:2},{design:'058',size:'Single',qty:1}], numberOfSets:3, amount:600, paymentMethod:'Bank Transfer', paymentStatus:'Paid', notes:'', orderDate:'25 Aug', deliveryDate:'2026-08-28', deliveryTime:'', status:'confirmed', assignedUserId:'u2', bucket:'month', createdBy:'Hassan Ali', deliveredAt:'28 Aug', confirmedAt:'30 Aug', amountCollected:600, ratePerSet:20, activityLog:[{time:'25 Aug',action:'Order created by Hassan Ali'},{time:'27 Aug',action:'Claimed by Fathimath Nazly'},{time:'28 Aug',action:'Marked delivered by Fathimath Nazly'},{time:'30 Aug',action:'Confirmed by Admin'}]},
+      {id:'o13', orderNumber:'SG-1053', area:'Boat / Launch', customerName:'Hawwa Sun', phone:'+9607734562', address:'Guesthouse, jetty', locationUrl:'', items:[{design:'047',size:'Queen',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Paid', notes:'', orderDate:'20 Aug', deliveryDate:'2026-08-22', deliveryTime:'', status:'confirmed', assignedUserId:'u4', bucket:'month', createdBy:'Aishath Waheeda', deliveredAt:'22 Aug', confirmedAt:'22 Aug', amountCollected:400, ratePerSet:25, activityLog:[{time:'20 Aug',action:'Order created by Aishath Waheeda'},{time:'21 Aug',action:'Claimed by Aminath Hassan'},{time:'22 Aug',action:'Marked delivered by Aminath Hassan'},{time:'22 Aug',action:'Confirmed by Admin'}]}
+    ],
+    payouts: [
+      {id:'p1', userId:'u1', periodStart:'2026-09-01', periodEnd:'2026-09-10', amount:25, paymentDate:'11 Sep', reference:'BML-1187', notes:'Partial early payout'}
+    ],
+    stock: this.initialStock()
+  };
+
+  updateStockQty = (design, size, val) => this.setState(s=>({stock: s.stock.map(row=> row.design===design ? {...row, qty:{...row.qty, [size]: Number(val)||0}} : row)}));
+  exportStockCSV = () => {
+    const header = ['Design', ...this.SIZES].join(',');
+    const rows = this.state.stock.map(r => [r.design, ...this.SIZES.map(sz=>r.qty[sz])].join(','));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'skygo-stock.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  };
+  importStockCSV = (e) => {
+    const file = e.target.files && e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const lines = String(ev.target.result).split(/\r?\n/).filter(l=>l.trim());
+      const newStock = lines.slice(1).map(line => {
+        const parts = line.split(',');
+        return {design: (parts[0]||'').trim(), qty: {
+          'Single': Number(parts[1])||0, 'Supersingle / Double': Number(parts[2])||0, 'Queen': Number(parts[3])||0, 'King': Number(parts[4])||0
+        }};
+      }).filter(r=>r.design);
+      if(newStock.length){ this.setState({stock:newStock}); this.pushNotification('Stock updated from spreadsheet import'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  fmt(n){ return 'MVR ' + Number(n||0).toLocaleString('en-US'); }
+  itemsSummary(o){ return (o.items||[]).map(it=> it.design + ' ' + it.size + ' x' + it.qty).join(', '); }
+
+  STATUS_META = {
+    pending: {label:'Pending', icon:'clock', tagClass:'tag-neutral'},
+    out_for_delivery: {label:'Out for Delivery', icon:'truck', tagClass:'tag-outline'},
+    awaiting_confirmation: {label:'Awaiting Approval', icon:'hourglass', tagClass:'tag-accent'},
+    confirmed: {label:'Confirmed', icon:'check', tagClass:'tag-accent'},
+    cancelled: {label:'Cancelled', icon:'x', tagClass:'tag-neutral'},
+    failed: {label:'Failed Delivery', icon:'alertTriangle', tagClass:'tag-neutral'}
+  };
+
+  meta(status){ return this.STATUS_META[status] || this.STATUS_META.pending; }
+  userName(id){ const u=this.state.users.find(x=>x.id===id); return u?u.name:'Unassigned'; }
+  findOrder(id){ return this.state.orders.find(o=>o.id===id); }
+  updateOrder(id, patch){ this.setState(s=>({orders: s.orders.map(o=> o.id===id ? {...o,...patch} : o)})); }
+  addActivity(id, action){ this.setState(s=>({orders: s.orders.map(o=> o.id===id ? {...o, activityLog:[...o.activityLog, {time:'Just now', action}]} : o)})); }
+  pushNotification(text){ this.setState(s=>({notifications:[{id:Date.now(), text, time:'Just now'}, ...s.notifications]})); }
+  stop = (e) => { if(e && e.stopPropagation) e.stopPropagation(); };
+
+  onLoginEmailChange = (e) => this.setState({loginEmail: e.target.value});
+  onLoginPasswordChange = (e) => this.setState({loginPassword: e.target.value});
+  quickLogin = (userId) => {
+    const u = this.state.users.find(x=>x.id===userId);
+    if(!u) return;
+    this.setState({role:u.role, currentUserId:u.id, loginError:'', notifOpen:false});
+  };
+  submitLogin = (e) => {
+    e.preventDefault();
+    const email = (this.state.loginEmail||'').trim().toLowerCase();
+    const u = this.state.users.find(x=>x.email.toLowerCase()===email && x.status==='active');
+    if(u){ this.quickLogin(u.id); } else { this.setState({loginError:'No matching demo account. Try one of the accounts below.'}); }
+  };
+  logout = () => this.setState({role:null, currentUserId:null, loginEmail:'', loginPassword:'', notifOpen:false, adminView:'dashboard', deliveryView:'home'});
+  toggleNotif = () => this.setState(s=>({notifOpen:!s.notifOpen}));
+  gotoAdmin = (v) => this.setState(s=>({adminView:v, notifOpen:false, deliveryView: v==='deliver' && !['areas','areaDetail'].includes(s.deliveryView) ? 'areas' : s.deliveryView}));
+  gotoDelivery = (v) => this.setState({deliveryView:v, notifOpen:false});
+  goDeliveries = () => this.setState({deliveryView:'areas', notifOpen:false});
+  openArea = (area) => this.setState({selectedArea:area, deliveryView:'areaDetail'});
+
+  openNewOrderQuick = () => { this.gotoAdmin('orders'); this.openNewOrder(); };
+  openNewOrder = () => this.setState({newOrderOpen:true, newOrderError:'', newOrder:{customerName:'',phone:'',area:this.areas[0],address:'',locationUrl:'',items:[{design:'',size:'Single',qty:1}],amount:'',paymentMethod:'Cash',paymentStatus:'Unpaid',deliveryDate:'',deliveryTime:'',notes:''}});
+  closeNewOrder = () => this.setState({newOrderOpen:false});
+  nf(key){ return (e)=> this.setState(s=>({newOrder:{...s.newOrder, [key]: e.target.value}})); }
+  addNewOrderItem = () => this.setState(s=>({newOrder:{...s.newOrder, items:[...s.newOrder.items, {design:'',size:'Single',qty:1}]}}));
+  removeNewOrderItem = (idx) => this.setState(s=>({newOrder:{...s.newOrder, items:s.newOrder.items.filter((_,i)=>i!==idx)}}));
+  setNewOrderItemField = (idx,key,val) => this.setState(s=>({newOrder:{...s.newOrder, items:s.newOrder.items.map((it,i)=> i===idx?{...it,[key]:val}:it)}}));
+  saveNewOrder = () => {
+    const n = this.state.newOrder;
+    if(!n.customerName || !n.phone || !n.address){ this.setState({newOrderError:'Customer name, phone and address are required.'}); return; }
+    const num = 'SG-' + (1054 + this.state.orders.length);
+    const items = n.items.filter(it=>it.design || it.qty);
+    const numberOfSets = items.reduce((a,it)=>a+(Number(it.qty)||0),0) || 1;
+    const order = {
+      id:'o'+Date.now(), orderNumber:num, area:n.area, customerName:n.customerName, phone:n.phone, address:n.address,
+      locationUrl:n.locationUrl||'', items, numberOfSets, amount:Number(n.amount)||0,
+      paymentMethod:n.paymentMethod, paymentStatus:n.paymentStatus, notes:n.notes||'',
+      orderDate:'Today', deliveryDate:n.deliveryDate, deliveryTime:n.deliveryTime,
+      status:'pending', assignedUserId:null, bucket:'today', createdBy: this.currentUser().name,
+      activityLog:[{time:'Just now', action:'Order created by ' + this.currentUser().name}]
+    };
+    this.setState(s=>({orders:[order, ...s.orders], newOrderOpen:false}));
+    this.pushNotification('New order ' + num + ' added to ' + n.area);
+  };
+
+  openOrderDetail = (id) => this.setState({selectedOrderId:id, orderDetailOpen:true, reassignSelection: (this.findOrder(id)||{}).assignedUserId || ''});
+  closeOrderDetail = () => this.setState({orderDetailOpen:false});
+  onReassignChange = (e) => this.setState({reassignSelection:e.target.value});
+  applyReassign = () => {
+    const id = this.state.selectedOrderId; const val = this.state.reassignSelection;
+    if(val){ this.updateOrder(id, {assignedUserId:val, status:'out_for_delivery'}); this.addActivity(id, 'Reassigned to ' + this.userName(val) + ' by Admin'); }
+    else { this.updateOrder(id, {assignedUserId:null, status:'pending'}); this.addActivity(id, 'Unassigned by Admin'); }
+  };
+  releaseSelectedOrder = () => { const id=this.state.selectedOrderId; this.updateOrder(id, {assignedUserId:null, status:'pending'}); this.addActivity(id, 'Claim released by Admin'); this.setState({reassignSelection:''}); };
+  cancelSelectedOrder = () => { const id=this.state.selectedOrderId; this.updateOrder(id, {status:'cancelled'}); this.addActivity(id, 'Cancelled by Admin'); };
+  deleteOrder = (id) => {
+    if(typeof window!=='undefined' && !window.confirm('Delete this order? This cannot be undone.')) return;
+    this.setState(s=>({orders:s.orders.filter(o=>o.id!==id), orderDetailOpen:false}));
+    this.pushNotification('Order deleted by ' + this.currentUser().name);
+  };
+  deleteSelectedOrder = () => this.deleteOrder(this.state.selectedOrderId);
+
+  claimArea = (area) => {
+    const me = this.currentUser();
+    const ids = this.state.orders.filter(o=>o.area===area && o.status==='pending').map(o=>o.id);
+    ids.forEach(id => { this.updateOrder(id, {assignedUserId:me.id, status:'out_for_delivery'}); this.addActivity(id, 'Claimed by ' + me.name + ' (whole area)'); });
+    if(ids.length) this.pushNotification(me.name + ' is now delivering ' + area);
+  };
+  claimDelivery = (orderId) => {
+    const me = this.currentUser();
+    this.updateOrder(orderId, {assignedUserId:me.id, status:'out_for_delivery'});
+    this.addActivity(orderId, 'Claimed by ' + me.name);
+    this.pushNotification('Delivery ' + (this.findOrder(orderId)||{}).orderNumber + ' claimed by ' + me.name);
+  };
+  openDeliverDialog = (orderId) => {
+    const o = this.findOrder(orderId);
+    this.setState({deliverDialogOrderId:orderId, deliverForm:{amountCollected:String(o.amount), paymentMethod:o.paymentMethod||'Cash', remarks:'', proofAdded:false}});
+  };
+  closeDeliverDialog = () => this.setState({deliverDialogOrderId:null});
+  df(key){ return (e)=> this.setState(s=>({deliverForm:{...s.deliverForm, [key]: e.target.value}})); }
+  setDeliverPM = (pm) => this.setState(s=>({deliverForm:{...s.deliverForm, paymentMethod:pm}}));
+  toggleProof = () => this.setState(s=>({deliverForm:{...s.deliverForm, proofAdded:!s.deliverForm.proofAdded}}));
+  submitDelivered = () => {
+    const id = this.state.deliverDialogOrderId; const f = this.state.deliverForm; const me = this.currentUser();
+    const collected = Number(f.amountCollected)||0;
+    this.updateOrder(id, {status:'awaiting_confirmation', deliveredAt:'Just now', amountCollected:collected, paymentMethod:f.paymentMethod, paymentStatus: collected>0 ? 'Paid':'Unpaid', remarksDelivery:f.remarks, proofImage:f.proofAdded, ratePerSet:this.state.settings.ratePerSet});
+    this.addActivity(id, 'Marked delivered by ' + me.name);
+    this.pushNotification('Delivery ' + (this.findOrder(id)||{}).orderNumber + ' awaiting confirmation');
+    this.setState({deliverDialogOrderId:null});
+  };
+
+  confirmDelivery = (orderId) => {
+    this.updateOrder(orderId, {status:'confirmed', confirmedAt:'Just now'});
+    this.addActivity(orderId, 'Confirmed by ' + this.currentUser().name);
+    this.pushNotification('Delivery ' + (this.findOrder(orderId)||{}).orderNumber + ' confirmed');
+  };
+  rejectDelivery = (orderId) => {
+    this.updateOrder(orderId, {status:'pending', assignedUserId:null, amountCollected:undefined, remarksDelivery:'', proofImage:false});
+    this.addActivity(orderId, 'Rejected and returned to pending by ' + this.currentUser().name);
+    this.pushNotification('Delivery ' + (this.findOrder(orderId)||{}).orderNumber + ' rejected');
+  };
+
+  BANK_LOGOS = { bml: 'assets/bml-logo.png', mib: 'assets/mib-logo.png' };
+  copyBankTile = (bankId, currency) => {
+    const b = this.state.settings.bankAccounts.find(x=>x.id===bankId); if(!b) return;
+    const num = currency==='MVR' ? b.mvrNumber : b.usdNumber;
+    const text = b.bankName + ' - ' + currency + ': ' + num + ' (' + b.accountName + ')';
+    if(typeof navigator!=='undefined' && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text); }
+    const key = bankId+'-'+currency;
+    this.setState({bankCopiedId:key});
+    setTimeout(() => this.setState({bankCopiedId:null}), 1500);
+  };
+  setBankField = (idx, key, val) => this.setState(s=>({bankDraft: s.bankDraft.map((b,i)=> i===idx ? {...b,[key]:val} : b)}));
+  saveBankDetails = () => this.setState(s=>({settings:{...s.settings, bankAccounts: s.bankDraft.map(b=>({...b}))}, bankSaved:true}));
+  onStockSearchChange = (e) => this.setState({stockSearch:e.target.value});
+  toggleTheme = () => this.setState(s=>({theme: s.theme==='dark' ? 'light' : 'dark'}));
+  DARK_VARS = '--color-bg:#17181a;--color-surface:#212226;--color-text:#f0eeed;--color-divider:rgba(240,238,237,0.22);--color-neutral-100:#2a2b2f;--color-neutral-200:#33343a;--color-neutral-300:#3c3e46;--color-neutral-800:#d8d6d5;--color-neutral-900:#efeceb;--color-accent-100:#3a1712;--color-accent-700:#ff9783;--color-accent-800:#ffb3a3;';
+  onRateDraftChange = (e) => this.setState({rateDraft:e.target.value, rateSaved:false});
+  saveRate = () => { const v = Number(this.state.rateDraft)||this.state.settings.ratePerSet; this.setState(s=>({settings:{...s.settings, ratePerSet:v}, rateSaved:true})); };
+  openUserForm = () => this.setState({userFormOpen:true, newUser:{name:'',phone:'',email:''}});
+  closeUserForm = () => this.setState({userFormOpen:false});
+  nu(key){ return (e)=> this.setState(s=>({newUser:{...s.newUser, [key]:e.target.value}})); }
+  saveNewUser = () => {
+    const n = this.state.newUser; if(!n.name) return;
+    this.setState(s=>({users:[...s.users, {id:'u'+Date.now(), name:n.name, phone:n.phone, email:n.email, role:'delivery', status:'active'}], userFormOpen:false}));
+  };
+  toggleUserStatus = (userId) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status: u.status==='active'?'disabled':'active'} : u)}));
+  changeUserRole = (userId, role) => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}));
+  resetPassword = (userId) => this.pushNotification('Password reset link sent to ' + this.userName(userId));
+
+  computeOutstanding(userId){
+    const orders = this.state.orders.filter(o=>o.assignedUserId===userId && o.status==='confirmed');
+    const earned = orders.reduce((sum,o)=> sum + o.numberOfSets*(o.ratePerSet||this.state.settings.ratePerSet), 0);
+    const paid = this.state.payouts.filter(p=>p.userId===userId).reduce((s,p)=>s+Number(p.amount),0);
+    return Math.max(0, earned-paid);
+  }
+  openPayoutForm = (userId) => this.setState({payoutFormOpen:true, payoutUserId:userId, payoutForm:{periodStart:'',periodEnd:'',amount:String(this.computeOutstanding(userId)),reference:'',notes:''}});
+  closePayoutForm = () => this.setState({payoutFormOpen:false});
+  pf(key){ return (e)=> this.setState(s=>({payoutForm:{...s.payoutForm, [key]:e.target.value}})); }
+  savePayout = () => {
+    const f = this.state.payoutForm; const uid = this.state.payoutUserId;
+    this.setState(s=>({payouts:[...s.payouts, {id:'p'+Date.now(), userId:uid, periodStart:f.periodStart, periodEnd:f.periodEnd, amount:Number(f.amount)||0, paymentDate:'Today', reference:f.reference, notes:f.notes}], payoutFormOpen:false}));
+    this.pushNotification('Payment recorded for ' + this.userName(uid));
+  };
+
+  setStaffPeriod = (p) => this.setState({staffPeriod:p});
+  onOrderSearchChange = (e) => this.setState({orderSearch:e.target.value});
+  onOrderAreaFilterChange = (e) => this.setState({orderAreaFilter:e.target.value});
+  onOrderStatusFilterChange = (e) => this.setState({orderStatusFilter:e.target.value});
+  onReportTypeChange = (e) => this.setState({reportType:e.target.value});
+  onReportAreaChange = (e) => this.setState({reportArea:e.target.value});
+
+  exportReport = () => {
+    const cols = this.state._reportColumns || []; const rows = this.state._reportRows || [];
+    const csv = [cols.join(','), ...rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(','))].join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'skygo-' + this.state.reportType + '-report.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  };
+
+  currentUser(){ return this.state.users.find(u=>u.id===this.state.currentUserId) || {name:'', email:'', phone:''}; }
+
+  renderVals() {
+    const s = this.state;
+    const me = this.currentUser();
+    const isLoggedOut = !s.role;
+    const isAdminShell = s.role === 'admin' || s.role === 'manager';
+    const isFullAdmin = s.role === 'admin';
+    const isDelivery = s.role === 'delivery';
+    const rate = s.settings.ratePerSet;
+    const bankTilesView = [];
+    s.settings.bankAccounts.forEach(b=>{
+      ['MVR','USD'].forEach(cur=>{
+        const key = b.id+'-'+cur;
+        bankTilesView.push({ bankName: b.bankName, logo: this.BANK_LOGOS[b.id], currency: cur, number: cur==='MVR'?b.mvrNumber:b.usdNumber,
+          copyLabel: s.bankCopiedId===key ? 'Copied!' : 'Copy', copy: () => this.copyBankTile(b.id, cur) });
+      });
+    });
+    const bankDraftView = s.bankDraft.map((b,idx)=>({
+      ...b, logo: this.BANK_LOGOS[b.id],
+      onMvr: (e) => this.setBankField(idx,'mvrNumber',e.target.value),
+      onUsd: (e) => this.setBankField(idx,'usdNumber',e.target.value)
+    }));
+    const theme = s.theme || 'light';
+    const themeVarsCss = theme==='dark' ? this.DARK_VARS : '';
+    const iconThemeToggle = this.ic(theme==='dark' ? 'sun' : 'moon', 17);
+
+    const roleLabelOf = (role) => role==='admin' ? 'Admin' : (role==='manager' ? 'Manager' : 'Delivery Staff');
+    const demoAccounts = s.users.filter(u=>u.status==='active').map(u=>({name:u.name, roleLabel: roleLabelOf(u.role), onClick: () => this.quickLogin(u.id)}));
+
+    const iconBell = this.ic('bell',20);
+    const iconLogOut = this.ic('logOut',18);
+    const iconPlus = this.ic('plus',16);
+    const iconCheck = this.ic('check',16);
+    const iconX = this.ic('x',16);
+    const iconHourglass = this.ic('hourglass',14);
+    const iconBarChart = this.ic('barChart',16);
+    const iconPackage = this.ic('package',18);
+    const iconArrowLeft = this.ic('arrowLeft',20);
+    const iconPhone = this.ic('phone',16);
+    const iconMapPin = this.ic('mapPin',16);
+    const iconCamera = this.ic('camera',16);
+    const iconTrash = this.ic('trash',15);
+
+    const activeRiders = s.users.filter(u=>u.role==='delivery' && u.status==='active');
+
+    const decorate = (o) => {
+      const m = this.meta(o.status);
+      const ac = this.areaColor(o.area);
+      return Object.assign({}, o, {
+        areaBg: ac.bg, areaFg: ac.fg,
+        statusLabel: m.label, statusTagClass: m.tagClass, statusIcon: this.ic(m.icon,14),
+        amountDisplay: this.fmt(o.amount), amountCollectedDisplay: this.fmt(o.amountCollected),
+        earningsDisplay: this.fmt(o.numberOfSets*(o.ratePerSet||rate)),
+        itemsSummary: this.itemsSummary(o),
+        payTagClass: o.paymentStatus==='Paid' ? 'tag-accent' : 'tag-outline',
+        riderName: o.assignedUserId ? this.userName(o.assignedUserId) : 'Unassigned',
+        proofLabel: o.proofImage ? 'Photo attached' : 'None',
+        telHref: 'tel:' + o.phone,
+        hasLocation: !!o.locationUrl,
+        openDetail: () => this.openOrderDetail(o.id),
+        deleteRow: (e) => { e.stopPropagation(); this.deleteOrder(o.id); }
+      });
+    };
+
+    const overviewOrders = s.orders.filter(o=>o.bucket==='today');
+    const countStatus = (arr, st) => arr.filter(o=>o.status===st).length;
+    const totalSetsConfirmed = s.orders.filter(o=>o.status==='confirmed' && o.bucket==='today').reduce((a,o)=>a+o.numberOfSets,0);
+    const totalEarningsToday = s.orders.filter(o=>o.status==='confirmed' && o.bucket==='today').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0);
+    const overviewStats = [
+      {label:'Orders Received', value: overviewOrders.length},
+      {label:'Deliveries Pending', value: countStatus(overviewOrders,'pending')},
+      {label:'Out for Delivery', value: countStatus(overviewOrders,'out_for_delivery')},
+      {label:'Awaiting Confirmation', value: countStatus(overviewOrders,'awaiting_confirmation')},
+      {label:'Confirmed Deliveries', value: countStatus(overviewOrders,'confirmed')},
+      {label:'Failed Deliveries', value: s.orders.filter(o=>o.status==='failed').length},
+      {label:'Total Sets Delivered', value: totalSetsConfirmed},
+      {label:'Total Delivery Earnings', value: this.fmt(totalEarningsToday)}
+    ];
+    const areaPerformance = this.areas.map(area=>{
+      const areaOrders = s.orders.filter(o=>o.area===area && o.status!=='cancelled');
+      const completed = areaOrders.filter(o=>o.status==='confirmed').length;
+      const total = areaOrders.length;
+      return {area, completed, total, pct: total ? Math.round(completed/total*100) : 0};
+    });
+    const statusBreakdown = ['pending','out_for_delivery','awaiting_confirmation','confirmed','failed','cancelled'].map(st=>{
+      const m = this.meta(st);
+      return {label:m.label, icon:this.ic(m.icon,16), count: s.orders.filter(o=>o.status===st).length};
+    });
+
+    const statusOptions = ['pending','out_for_delivery','awaiting_confirmation','confirmed','cancelled','failed'].map(v=>({value:v, label:this.meta(v).label}));
+    let filteredOrders = s.orders.map(decorate).filter(o=>{
+      if(s.orderAreaFilter!=='All' && o.area!==s.orderAreaFilter) return false;
+      if(s.orderStatusFilter!=='All' && o.status!==s.orderStatusFilter) return false;
+      if(s.orderSearch){
+        const q = s.orderSearch.toLowerCase();
+        const hay = [o.orderNumber,o.customerName,o.phone,o.area,o.riderName].join(' ').toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    filteredOrders = filteredOrders.sort((a,b)=> this.areas.indexOf(a.area) - this.areas.indexOf(b.area));
+
+    const pendingConfirmationOrders = s.orders.filter(o=>o.status==='awaiting_confirmation').map(o=>Object.assign(decorate(o), {
+      confirm: () => this.confirmDelivery(o.id), reject: () => this.rejectDelivery(o.id)
+    }));
+
+    const periodOptions = [{key:'today',label:'Today'},{key:'week',label:'This Week'},{key:'month',label:'This Month'}].map(p=>({...p, checked: s.staffPeriod===p.key, onClick: () => this.setStaffPeriod(p.key)}));
+    const inPeriod = (o) => s.staffPeriod==='today' ? o.bucket==='today' : (s.staffPeriod==='week' ? (o.bucket==='today'||o.bucket==='week') : true);
+    const staffPerformance = activeRiders.map(u=>{
+      const mine = s.orders.filter(o=>o.assignedUserId===u.id && inPeriod(o));
+      const completed = mine.filter(o=>['awaiting_confirmation','confirmed'].includes(o.status)).length;
+      const setsArr = mine.filter(o=>['awaiting_confirmation','confirmed'].includes(o.status));
+      const sets = setsArr.reduce((a,o)=>a+o.numberOfSets,0);
+      const confirmed = mine.filter(o=>o.status==='confirmed').length;
+      const failed = mine.filter(o=>o.status==='failed').length;
+      const earnings = mine.filter(o=>o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0);
+      const paid = s.payouts.filter(p=>p.userId===u.id).reduce((a,p)=>a+Number(p.amount),0);
+      return {name:u.name, completed, sets, confirmed, failed, earningsDisplay:this.fmt(earnings), paidDisplay:this.fmt(paid), outstandingDisplay:this.fmt(this.computeOutstanding(u.id))};
+    });
+
+    const manageableUsers = s.users.map(u=>({
+      ...u, statusLabel: u.status==='active'?'Active':'Disabled', statusTagClass: u.status==='active'?'tag-accent':'tag-neutral',
+      toggleLabel: u.status==='active'?'Disable':'Enable', toggleStatus: () => this.toggleUserStatus(u.id),
+      resetPassword: () => this.resetPassword(u.id), onRoleChange: (e) => this.changeUserRole(u.id, e.target.value)
+    }));
+
+    const paymentsRows = activeRiders.map(u=>{
+      const earned = s.orders.filter(o=>o.assignedUserId===u.id && o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0);
+      const paid = s.payouts.filter(p=>p.userId===u.id).reduce((a,p)=>a+Number(p.amount),0);
+      const outstanding = this.computeOutstanding(u.id);
+      return {name:u.name, confirmedSets: s.orders.filter(o=>o.assignedUserId===u.id && o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets,0),
+        earningsDisplay:this.fmt(earned), paidDisplay:this.fmt(paid), outstandingDisplay:this.fmt(outstanding), noneOutstanding: outstanding<=0,
+        openPayout: () => this.openPayoutForm(u.id)};
+    });
+    const payoutHistory = s.payouts.map(p=>({name:this.userName(p.userId), period:(p.periodStart||'-')+' to '+(p.periodEnd||'-'), amountDisplay:this.fmt(p.amount), paymentDate:p.paymentDate, reference:p.reference, notes:p.notes}));
+
+    let reportColumns = [], reportRows = [];
+    const reportFilterArea = (o) => s.reportArea==='All' || o.area===s.reportArea;
+    if(s.reportType==='orders'){
+      reportColumns = ['Order','Customer','Area','Items','Amount','Status'];
+      reportRows = s.orders.filter(reportFilterArea).map(o=>[o.orderNumber,o.customerName,o.area,this.itemsSummary(o),this.fmt(o.amount),this.meta(o.status).label]);
+    } else if(s.reportType==='deliveries'){
+      reportColumns = ['Order','Delivery Staff','Area','Items','Status','Earnings'];
+      reportRows = s.orders.filter(o=>o.assignedUserId && reportFilterArea(o)).map(o=>[o.orderNumber,this.userName(o.assignedUserId),o.area,this.itemsSummary(o),this.meta(o.status).label,this.fmt(o.numberOfSets*(o.ratePerSet||rate))]);
+    } else if(s.reportType==='staff'){
+      reportColumns = ['Delivery Staff','Confirmed Sets','Earnings','Paid','Outstanding'];
+      reportRows = activeRiders.map(u=>[u.name, s.orders.filter(o=>o.assignedUserId===u.id&&o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets,0), this.fmt(s.orders.filter(o=>o.assignedUserId===u.id&&o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0)), this.fmt(s.payouts.filter(p=>p.userId===u.id).reduce((a,p)=>a+Number(p.amount),0)), this.fmt(this.computeOutstanding(u.id))]);
+    } else if(s.reportType==='payouts'){
+      reportColumns = ['Delivery Staff','Period','Amount','Paid On','Reference'];
+      reportRows = s.payouts.map(p=>[this.userName(p.userId), (p.periodStart||'-')+' to '+(p.periodEnd||'-'), this.fmt(p.amount), p.paymentDate, p.reference]);
+    } else {
+      reportColumns = ['Area','Total Orders','Confirmed','Completion %'];
+      reportRows = areaPerformance.map(a=>[a.area, a.total, a.completed, a.pct+'%']);
+    }
+    this.state._reportColumns = reportColumns; this.state._reportRows = reportRows;
+
+    const totalOutstanding = activeRiders.reduce((a,u)=>a+this.computeOutstanding(u.id),0);
+    const quickTilesConfig = [
+      {v:'orders', label:'New Order', icon:'plus', bg:'#fdf6d8', fg:'#8a6d00', roles:['admin','manager'], onClick: () => this.openNewOrderQuick()},
+      {v:'deliver', label:'Deliver', icon:'truck', bg:'#e3edfb', fg:'#1d4ed8', roles:['admin','manager'], onClick: () => this.gotoAdmin('deliver')},
+      {v:'confirmations', label:'Confirmations', icon:'hourglass', bg:'#fbe4ec', fg:'#be185d', roles:['admin'], onClick: () => this.gotoAdmin('confirmations')},
+      {v:'payments', label:'Payments', icon:'wallet', bg:'#e1f7ea', fg:'#15803d', roles:['admin'], onClick: () => this.gotoAdmin('payments')}
+    ].filter(t=>t.roles.includes(s.role));
+    const quickTiles = quickTilesConfig.map(t=>({label:t.label, bg:t.bg, fg:t.fg, icon: this.ic(t.icon,22), onClick: t.onClick}));
+
+    const adminNavConfig = [
+      {v:'dashboard', label:'Dashboard', icon:'barChart', roles:['admin','manager']},
+      {v:'orders', label:'Orders', icon:'package', roles:['admin','manager']},
+      {v:'deliver', label:'Deliver', icon:'truck', roles:['admin','manager']},
+      {v:'stock', label:'Stock', icon:'grid', roles:['admin','manager']},
+      {v:'confirmations', label:'Confirmations', icon:'hourglass', roles:['admin']},
+      {v:'staff', label:'Delivery Staff', icon:'users', roles:['admin']},
+      {v:'payments', label:'Payments', icon:'wallet', roles:['admin']},
+      {v:'reports', label:'Reports', icon:'barChart', roles:['admin','manager']},
+      {v:'settings', label:'Settings', icon:'user', roles:['admin']}
+    ].filter(n=>n.roles.includes(s.role));
+    const adminNavItems = adminNavConfig.map(n=>{
+      const active = s.adminView===n.v;
+      return {label:n.label, icon:this.ic(n.icon,18), onClick: () => this.gotoAdmin(n.v), color: active?'#ff6b52':'#c7c8cc', bg: active?'rgba(255,255,255,0.06)':'transparent'};
+    });
+    const pageTitles = {dashboard:'Dashboard', orders:'Orders', deliver:'Deliver', stock:'Stock', confirmations:'Awaiting Confirmation', staff:'Delivery Staff', payments:'Payments & Payouts', reports:'Reports', settings:'Settings'};
+    const effectiveAdminView = adminNavConfig.find(n=>n.v===s.adminView) ? s.adminView : 'dashboard';
+
+    const myOrders = s.orders.filter(o=>o.assignedUserId===me.id);
+    const homeStats = [
+      {label:"Today's Pending", value: s.orders.filter(o=>o.bucket==='today'&&o.status==='pending').length},
+      {label:'My Deliveries Today', value: myOrders.filter(o=>o.bucket==='today'&&o.status==='out_for_delivery').length},
+      {label:'Awaiting Confirmation', value: myOrders.filter(o=>o.status==='awaiting_confirmation').length},
+      {label:'Confirmed Sets', value: myOrders.filter(o=>o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets,0)},
+      {label:'Potential Earnings', value: this.fmt(myOrders.filter(o=>o.status==='awaiting_confirmation').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0))},
+      {label:'Confirmed Earnings', value: this.fmt(myOrders.filter(o=>o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0))}
+    ];
+    const areaCards = this.areas.map(area=>{
+      const areaOrders = s.orders.filter(o=>o.area===area && o.status==='pending');
+      const outOrders = s.orders.filter(o=>o.area===area && o.status==='out_for_delivery');
+      const outRiders = [...new Set(outOrders.map(o=>this.userName(o.assignedUserId)))];
+      const c = this.areaColor(area);
+      return {area, pendingCount: areaOrders.length, setsCount: areaOrders.reduce((a,o)=>a+o.numberOfSets,0), outCount: outOrders.length,
+        inProgressLabel: outRiders.length ? outRiders.join(', ') + ' delivering here' : '', bg:c.bg, fg:c.fg, open: () => this.openArea(area)};
+    });
+    const areaInProgressRiders = [...new Set(s.orders.filter(o=>o.area===s.selectedArea && o.status==='out_for_delivery').map(o=>this.userName(o.assignedUserId)))];
+    const areaHasUnclaimedPending = s.orders.some(o=>o.area===s.selectedArea && o.status==='pending');
+    const areaDetailOrders = s.orders.filter(o=>o.area===s.selectedArea && (o.status==='pending'||o.status==='out_for_delivery')).map(o=>{
+      const d = decorate(o);
+      const isMine = o.assignedUserId===me.id;
+      return Object.assign(d, {
+        claimedByOther: o.status==='out_for_delivery' && !isMine,
+        canClaim: o.status==='pending',
+        canDeliver: o.status==='out_for_delivery' && isMine,
+        claim: () => this.claimDelivery(o.id), openDeliver: () => this.openDeliverDialog(o.id)
+      });
+    });
+    const earningsPeriods = [
+      {label:'Today', bucket:'today', showPotential:true},
+      {label:'This Week', bucket:'week', showPotential:false},
+      {label:'This Month', bucket:'month', showPotential:false}
+    ].map(p=>{
+      const inB = (o) => p.bucket==='today' ? o.bucket==='today' : (p.bucket==='week' ? (o.bucket==='today'||o.bucket==='week') : true);
+      const mine = myOrders.filter(inB);
+      const confirmedSets = mine.filter(o=>o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets,0);
+      const potentialSets = mine.filter(o=>o.status==='awaiting_confirmation').reduce((a,o)=>a+o.numberOfSets,0);
+      return {label:p.label, sets: confirmedSets+potentialSets, showPotential:p.showPotential,
+        potentialDisplay:this.fmt(mine.filter(o=>o.status==='awaiting_confirmation').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0)),
+        confirmedDisplay:this.fmt(mine.filter(o=>o.status==='confirmed').reduce((a,o)=>a+o.numberOfSets*(o.ratePerSet||rate),0))};
+    });
+    const historyList = myOrders.filter(o=>['awaiting_confirmation','confirmed','failed','cancelled'].includes(o.status)).map(decorate);
+    const recentHistory = historyList.slice(0,5);
+
+    const deliveryNavConfig = [
+      {v:'home', label:'Home', icon:'home'},
+      {v:'areas', label:'Deliveries', icon:'package'},
+      {v:'earnings', label:'Earnings', icon:'wallet'},
+      {v:'history', label:'History', icon:'clock'},
+      {v:'stock', label:'Stock', icon:'grid'},
+      {v:'profile', label:'Profile', icon:'user'}
+    ];
+    const effectiveDeliveryView = s.deliveryView==='areaDetail' ? 'areas' : s.deliveryView;
+    const deliveryNavItems = deliveryNavConfig.map(n=>({
+      label:n.label, icon:this.ic(n.icon,20), onClick: () => this.gotoDelivery(n.v),
+      color: effectiveDeliveryView===n.v ? 'var(--color-accent)' : 'color-mix(in srgb, var(--color-text) 55%, transparent)'
+    }));
+
+    const deliverOrderRaw = s.deliverDialogOrderId ? this.findOrder(s.deliverDialogOrderId) : {orderNumber:'',customerName:'',items:[]};
+    const deliverOrder = Object.assign({}, deliverOrderRaw, {itemsSummary: this.itemsSummary(deliverOrderRaw)});
+    const paymentMethodOptions = ['Cash','Bank Transfer','Paid Online','Other'].map(pm=>({label:pm, checked: s.deliverForm.paymentMethod===pm, onClick: () => this.setDeliverPM(pm)}));
+
+    const selOrder = s.selectedOrderId ? this.findOrder(s.selectedOrderId) : null;
+    const selectedOrder = selOrder ? Object.assign(decorate(selOrder), {
+      cannotRelease: !selOrder.assignedUserId,
+      cannotCancel: ['confirmed','cancelled'].includes(selOrder.status)
+    }) : {orderNumber:'',customerName:'',activityLog:[]};
+
+    const newOrderItems = (s.newOrder && s.newOrder.items ? s.newOrder.items : []).map((it,idx)=>({
+      design: it.design, size: it.size, qty: it.qty,
+      onDesign: (e)=> this.setNewOrderItemField(idx,'design',e.target.value),
+      onSize: (e)=> this.setNewOrderItemField(idx,'size',e.target.value),
+      onQty: (e)=> this.setNewOrderItemField(idx,'qty',e.target.value),
+      remove: () => this.removeNewOrderItem(idx)
+    }));
+
+    return {
+      isLoggedOut, isAdminShell, isFullAdmin, isDelivery,
+      shellRoleLabel: isFullAdmin ? 'Admin console' : 'Order manager console',
+      loginEmail: s.loginEmail, loginPassword: s.loginPassword, loginError: s.loginError,
+      onLoginEmailChange: this.onLoginEmailChange, onLoginPasswordChange: this.onLoginPasswordChange, submitLogin: this.submitLogin,
+      demoAccounts,
+      currentUser: {name: me.name, firstName: (me.name||'').split(' ')[0], initials: (me.name||'').split(' ').map(x=>x[0]).slice(0,2).join(''), phone: me.phone, email: me.email},
+      logout: this.logout, toggleNotif: this.toggleNotif, notifOpen: s.notifOpen,
+      notifications: s.notifications.slice(0,8), hasNotifications: s.notifications.length>0, noNotifications: s.notifications.length===0, notifCount: s.notifications.length>9?'9+':s.notifications.length,
+      iconBell, iconLogOut, iconPlus, iconCheck, iconX, iconHourglass, iconBarChart, iconPackage, iconArrowLeft, iconPhone, iconMapPin, iconCamera, iconTrash,
+      stop: this.stop,
+      theme, themeVarsCss, iconThemeToggle, toggleTheme: this.toggleTheme,
+      quickTiles, showOutstandingCard: isFullAdmin, totalOutstandingDisplay: this.fmt(totalOutstanding), goPayments: () => this.gotoAdmin('payments'),
+
+      adminNavItems, adminPageTitle: pageTitles[effectiveAdminView],
+      isDashboardView: effectiveAdminView==='dashboard', isOrdersView: effectiveAdminView==='orders', isConfirmationsView: effectiveAdminView==='confirmations',
+      isStaffView: effectiveAdminView==='staff', isPaymentsView: effectiveAdminView==='payments', isReportsView: effectiveAdminView==='reports', isSettingsView: effectiveAdminView==='settings',
+      isDeliverView: effectiveAdminView==='deliver', isAreasView: s.deliveryView==='areas', isAreaDetailView: s.deliveryView==='areaDetail',
+      isStockView: effectiveAdminView==='stock',
+      stockRows: s.stock.map(row=>({
+        design: row.design, image: row.image, single: row.qty['Single'], supersingle: row.qty['Supersingle / Double'], queen: row.qty['Queen'], king: row.qty['King'],
+        onSingle: (e)=>this.updateStockQty(row.design,'Single',e.target.value),
+        onSupersingle: (e)=>this.updateStockQty(row.design,'Supersingle / Double',e.target.value),
+        onQueen: (e)=>this.updateStockQty(row.design,'Queen',e.target.value),
+        onKing: (e)=>this.updateStockQty(row.design,'King',e.target.value)
+      })),
+      exportStockCSV: this.exportStockCSV, importStockCSV: this.importStockCSV,
+      iconCopy: this.ic('copy',15), bankTilesView, bankDraftView, bankSaved: s.bankSaved, saveBankDetails: this.saveBankDetails,
+      stockSearch: s.stockSearch, onStockSearchChange: this.onStockSearchChange,
+      stockRowsMobile: s.stock.filter(row=> !s.stockSearch || row.design.includes(s.stockSearch)).map(row=>({
+        design: row.design, image: row.image, single: row.qty['Single'], supersingle: row.qty['Supersingle / Double'], queen: row.qty['Queen'], king: row.qty['King']
+      })),
+      overviewStats, areaPerformance, statusBreakdown,
+      orderSearch: s.orderSearch, orderAreaFilter: s.orderAreaFilter, orderStatusFilter: s.orderStatusFilter, areas: this.areas, statusOptions,
+      onOrderSearchChange: this.onOrderSearchChange, onOrderAreaFilterChange: this.onOrderAreaFilterChange, onOrderStatusFilterChange: this.onOrderStatusFilterChange,
+      openNewOrder: this.openNewOrder, filteredOrders, noFilteredOrders: filteredOrders.length===0,
+      pendingConfirmationOrders, noConfirmationOrders: pendingConfirmationOrders.length===0,
+      periodOptions, staffPerformance, manageableUsers, openUserForm: this.openUserForm,
+      paymentsRows, payoutHistory, noPayouts: payoutHistory.length===0,
+      reportType: s.reportType, reportArea: s.reportArea, onReportTypeChange: this.onReportTypeChange, onReportAreaChange: this.onReportAreaChange,
+      exportReport: this.exportReport, reportColumns, reportRows,
+      rateDraft: s.rateDraft, onRateDraftChange: this.onRateDraftChange, saveRate: this.saveRate, rateSaved: s.rateSaved, settings: s.settings,
+
+
+      newOrderOpen: s.newOrderOpen, newOrder: s.newOrder || {}, newOrderItems, addNewOrderItem: this.addNewOrderItem, newOrderError: s.newOrderError, closeNewOrder: this.closeNewOrder, saveNewOrder: this.saveNewOrder,
+      onNF_customerName: this.nf('customerName'), onNF_phone: this.nf('phone'), onNF_area: this.nf('area'), onNF_address: this.nf('address'),
+      onNF_locationUrl: this.nf('locationUrl'), onNF_amount: this.nf('amount'), onNF_paymentMethod: this.nf('paymentMethod'),
+      onNF_paymentStatus: this.nf('paymentStatus'), onNF_deliveryDate: this.nf('deliveryDate'), onNF_deliveryTime: this.nf('deliveryTime'), onNF_notes: this.nf('notes'),
+
+      orderDetailOpen: s.orderDetailOpen, selectedOrder, closeOrderDetail: this.closeOrderDetail, deleteSelectedOrder: this.deleteSelectedOrder,
+      reassignSelection: s.reassignSelection, onReassignChange: this.onReassignChange, applyReassign: this.applyReassign,
+      releaseSelectedOrder: this.releaseSelectedOrder, cancelSelectedOrder: this.cancelSelectedOrder, activeRiders,
+
+      userFormOpen: s.userFormOpen, newUser: s.newUser, closeUserForm: this.closeUserForm, saveNewUser: this.saveNewUser,
+      onNU_name: this.nu('name'), onNU_phone: this.nu('phone'), onNU_email: this.nu('email'),
+
+      payoutFormOpen: s.payoutFormOpen, payoutUserName: this.userName(s.payoutUserId), payoutForm: s.payoutForm, closePayoutForm: this.closePayoutForm, savePayout: this.savePayout,
+      onPF_periodStart: this.pf('periodStart'), onPF_periodEnd: this.pf('periodEnd'), onPF_amount: this.pf('amount'), onPF_reference: this.pf('reference'), onPF_notes: this.pf('notes'),
+
+      deliveryNavItems,
+      isHomeView: s.deliveryView==='home', isAreasView: s.deliveryView==='areas', isAreaDetailView: s.deliveryView==='areaDetail',
+      isEarningsView: s.deliveryView==='earnings', isHistoryView: s.deliveryView==='history', isProfileView: s.deliveryView==='profile',
+      isDeliveryStockView: s.deliveryView==='stock',
+      homeStats, goDeliveries: this.goDeliveries, areaCards,
+      selectedArea: s.selectedArea, areaDetailOrders, noAreaOrders: areaDetailOrders.length===0,
+      areaInProgressLabel: areaInProgressRiders.join(', ') + ' currently delivering here', hasAreaInProgress: areaInProgressRiders.length>0,
+      areaHasUnclaimedPending, claimWholeArea: () => this.claimArea(s.selectedArea),
+      earningsPeriods, recentHistory,
+      fullHistory: historyList, noHistory: historyList.length===0,
+
+      deliverDialogOpen: !!s.deliverDialogOrderId, deliverOrder, deliverForm: s.deliverForm, closeDeliverDialog: this.closeDeliverDialog, submitDelivered: this.submitDelivered,
+      onDF_amount: this.df('amountCollected'), onDF_remarks: this.df('remarks'), paymentMethodOptions, toggleProof: this.toggleProof,
+      isBankTransferSelected: s.deliverForm.paymentMethod==='Bank Transfer',
+      proofButtonLabel: s.deliverForm.proofAdded ? 'Photo added' : 'Add photo'
+    };
+  }
+}
+</script>
+</body>
+</html>
