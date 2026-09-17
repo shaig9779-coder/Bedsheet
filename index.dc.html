@@ -57,24 +57,13 @@
       </div>
       <div class="field" style="margin-bottom:6px;">
         <label>Password</label>
-        <input class="input" type="password" placeholder="Any password works in this demo" value="{{ loginPassword }}" onChange="{{ onLoginPasswordChange }}">
+        <input class="input" type="password" placeholder="Enter your password" value="{{ loginPassword }}" onChange="{{ onLoginPasswordChange }}">
       </div>
       <sc-if value="{{ loginError }}">
         <div style="font-size:12px; color:var(--color-accent-700); margin-bottom:10px;">{{ loginError }}</div>
       </sc-if>
       <button type="submit" class="btn btn-primary btn-block" style="justify-content:center; margin-top:14px;">Sign in</button>
     </form>
-    <div style="margin-top:18px;">
-      <div style="font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:color-mix(in srgb, var(--color-text) 55%, transparent); margin-bottom:8px;">Demo accounts — tap to sign in</div>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <sc-for list="{{ demoAccounts }}" as="acc" hint-placeholder-count="6">
-          <button onClick="{{ acc.onClick }}" class="btn btn-secondary" style="justify-content:space-between; width:100%;">
-            <span>{{ acc.name }}</span>
-            <span class="tag tag-neutral">{{ acc.roleLabel }}</span>
-          </button>
-        </sc-for>
-      </div>
-    </div>
   </div>
 </div>
 </sc-if>
@@ -872,7 +861,6 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  USER_STORAGE_KEY = 'skygo-bedsheet-users-v1';
   SUPABASE_URL = 'https://uvrvjmyngavnxtcmrjsb.supabase.co';
   SUPABASE_KEY = 'sb_publishable_RiOwdFQe5ROFIa5E89yjdg_IaHcp3id';
   supabaseClient = null;
@@ -889,7 +877,7 @@ class Component extends DCLogic {
     {bg:'oklch(93% 0.035 329)', fg:'oklch(34% 0.12 329)'}
   ];
   areaColor(area){ const idx = this.areas.indexOf(area); return this.AREA_COLORS[idx] || {bg:'var(--color-neutral-100)', fg:'var(--color-text)'}; }
-  initialStock(){ return this.designs.map((d,i)=>({design:d, image: 'designs/'+this.designImageFiles[i], qty:{ 'Single': (i*3+5)%25, 'Supersingle / Double': (i*5+2)%20, 'Queen': (i*7+8)%30, 'King': (i*2+1)%15 }})); }
+  initialStock(){ return this.designs.map((d,i)=>({design:d, image: 'designs/'+this.designImageFiles[i], qty:{ 'Single':0, 'Supersingle / Double':0, 'Queen':0, 'King':0 }})); }
 
   ICONS = {
     home: [{t:'path',d:'M3 10 12 3l9 7'},{t:'path',d:'M5 9v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9'}],
@@ -932,20 +920,10 @@ class Component extends DCLogic {
     role: null, currentUserId: null,
     loginEmail: '', loginPassword: '', loginError: '',
     notifOpen: false,
-    notifications: [
-      {id:1, text:"Delivery SG-1048 marked delivered by Ahmed \u2014 awaiting confirmation", time:'11:30'},
-      {id:2, text:"Order SG-1047 added to Boat / Launch", time:'09:55'},
-      {id:3, text:"Delivery SG-1044 confirmed by Admin", time:'10:45'}
-    ],
-    settings: { ratePerSet: 25, bankAccounts: [
-      {id:'bml', bankName:'Bank of Maldives (BML)', accountName:'Skygo International Pvt Ltd', mvrNumber:'7730000123456', usdNumber:'7730000123457'},
-      {id:'mib', bankName:'Maldives Islamic Bank (MIB)', accountName:'Skygo International Pvt Ltd', mvrNumber:'90012345601', usdNumber:'90012345602'}
-    ]},
-    rateDraft: 25, rateSaved: false,
-    bankDraft: [
-      {id:'bml', bankName:'Bank of Maldives (BML)', accountName:'Skygo International Pvt Ltd', mvrNumber:'7730000123456', usdNumber:'7730000123457'},
-      {id:'mib', bankName:'Maldives Islamic Bank (MIB)', accountName:'Skygo International Pvt Ltd', mvrNumber:'90012345601', usdNumber:'90012345602'}
-    ], bankSaved: false, bankCopiedId: null,
+    notifications: [],
+    settings: { ratePerSet: 0, bankAccounts: [] },
+    rateDraft: 0, rateSaved: false,
+    bankDraft: [], bankSaved: false, bankCopiedId: null,
     orderSearch: '', orderAreaFilter: 'All', orderStatusFilter: 'All',
     adminView: 'dashboard', adminMenuOpen: false, deliveryView: 'home',
     newOrderOpen: false, newOrder: null, newOrderError: '',
@@ -957,37 +935,21 @@ class Component extends DCLogic {
     bankCopied: false, stockSearch: '', stockPreviewDesign: null, theme: 'light',
     selectedArea: null,
     deliverDialogOrderId: null, deliverForm: {amountCollected:'', paymentMethod:'Cash', remarks:'', proofAdded:false},
-    users: [
-      {id:'u-admin', name:'Aishath Waheeda', role:'admin', email:'admin@skygo.mv', phone:'+960 771-0001', status:'active'},
-      {id:'u-admin2', name:'Ismail Shaig', role:'admin', email:'shaig9779@gmail.com', phone:'+960 9139993', status:'active'},
-      {id:'u-mgr', name:'Hassan Ali', role:'manager', email:'manager@skygo.mv', phone:'+960 775-6789', status:'active'},
-      {id:'u1', name:'Ahmed Rasheed', role:'delivery', email:'ahmed@skygo.mv', phone:'+960 771-2345', status:'active'},
-      {id:'u2', name:'Fathimath Nazly', role:'delivery', email:'fathimath@skygo.mv', phone:'+960 772-3456', status:'active'},
-      {id:'u3', name:'Ibrahim Shafiu', role:'delivery', email:'ibrahim@skygo.mv', phone:'+960 773-4567', status:'active'},
-      {id:'u4', name:'Aminath Hassan', role:'delivery', email:'aminath@skygo.mv', phone:'+960 774-5678', status:'active'}
-    ],
-    orders: [
-      {id:'o1', orderNumber:'SG-1041', area:"Hulhumale' Phase 1", customerName:'Mohamed Rilwan', phone:'+9607712345', address:'Block 12, Flat 4B, Hulhumale', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+1', items:[{design:'058',size:'Single',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'Call before arriving', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'2:00-4:00 PM', status:'pending', assignedUserId:null, bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'09:12',action:'Order created by Aishath Waheeda'}]},
-      {id:'o2', orderNumber:'SG-1042', area:"Hulhumale' Phase 1", customerName:'Aishath Fazna', phone:'+9607723456', address:'Building 8, Hulhumale Phase 1', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+1', items:[{design:'047',size:'Queen',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Bank Transfer', paymentStatus:'Paid', notes:'Leave with security if unavailable', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Morning', status:'out_for_delivery', assignedUserId:'u1', bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'08:50',action:'Order created by Aishath Waheeda'},{time:'09:40',action:'Claimed by Ahmed Rasheed'}]},
-      {id:'o3', orderNumber:'SG-1043', area:"Hulhumale' Phase 2", customerName:'Hassan Zareer', phone:'+9607734567', address:'Villa 21, Hulhumale Phase 2', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+2', items:[{design:'058',size:'Single',qty:1},{design:'112',size:'Queen',qty:1}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Paid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Afternoon', status:'awaiting_confirmation', assignedUserId:'u2', bucket:'today', createdBy:'Hassan Ali', deliveredAt:'11:05', amountCollected:400, remarksDelivery:'Left at door, customer paid cash', proofImage:true, ratePerSet:25, activityLog:[{time:'08:30',action:'Order created by Hassan Ali'},{time:'09:15',action:'Claimed by Fathimath Nazly'},{time:'11:05',action:'Marked delivered by Fathimath Nazly'}]},
-      {id:'o4', orderNumber:'SG-1044', area:'Galholhu', customerName:'Ibrahim Nasih', phone:'+9607745678', address:'Rose Villa, Galholhu', locationUrl:'https://maps.google.com/?q=Galholhu', items:[{design:'076',size:'Supersingle / Double',qty:3}], numberOfSets:3, amount:600, paymentMethod:'Paid Online', paymentStatus:'Paid', notes:'', orderDate:'15 Sep', deliveryDate:'2026-09-16', deliveryTime:'Morning', status:'confirmed', assignedUserId:'u3', bucket:'today', createdBy:'Aishath Waheeda', deliveredAt:'10:20', confirmedAt:'10:45', amountCollected:600, ratePerSet:25, activityLog:[{time:'08:00',action:'Order created by Aishath Waheeda'},{time:'08:45',action:'Claimed by Ibrahim Shafiu'},{time:'10:20',action:'Marked delivered by Ibrahim Shafiu'},{time:'10:45',action:'Confirmed by Admin'}]},
-      {id:'o5', orderNumber:'SG-1045', area:'Maafannu', customerName:'Mariyam Shifa', phone:'+9607756789', address:'Lily Court, Maafannu', locationUrl:'', items:[{design:'058',size:'Single',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Evening', status:'pending', assignedUserId:null, bucket:'today', createdBy:'Hassan Ali', activityLog:[{time:'09:20',action:'Order created by Hassan Ali'}]},
-      {id:'o6', orderNumber:'SG-1046', area:'Henveiru', customerName:'Ali Waheed', phone:'+9607767890', address:'Orchid Manzil, Henveiru', locationUrl:'https://maps.google.com/?q=Henveiru', items:[{design:'090',size:'Queen',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Bank Transfer', paymentStatus:'Paid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Afternoon', status:'pending', assignedUserId:null, bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'09:45',action:'Order created by Aishath Waheeda'}]},
-      {id:'o7', orderNumber:'SG-1047', area:'Boat / Launch', customerName:'Fathimath Ibrahim', phone:'+9607778901', address:'Guesthouse Villingili, jetty pickup', locationUrl:'', items:[{design:'047',size:'Queen',qty:2},{design:'058',size:'Single',qty:2}], numberOfSets:4, amount:800, paymentMethod:'Other', paymentStatus:'Unpaid', notes:'Deliver to boat jetty, call on arrival', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'10:00 AM launch', status:'out_for_delivery', assignedUserId:'u4', bucket:'today', createdBy:'Aishath Waheeda', activityLog:[{time:'09:00',action:'Order created by Aishath Waheeda'},{time:'10:00',action:'Claimed by Aminath Hassan'}]},
-      {id:'o8', orderNumber:'SG-1048', area:'Maafannu', customerName:'Hussain Sameer', phone:'+9607789012', address:'Sun Villa, Maafannu', locationUrl:'https://maps.google.com/?q=Maafannu', items:[{design:'058',size:'Single',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Cash', paymentStatus:'Paid', notes:'', orderDate:'16 Sep', deliveryDate:'2026-09-16', deliveryTime:'Afternoon', status:'awaiting_confirmation', assignedUserId:'u1', bucket:'today', createdBy:'Hassan Ali', deliveredAt:'11:30', amountCollected:200, remarksDelivery:'', proofImage:false, ratePerSet:25, activityLog:[{time:'09:10',action:'Order created by Hassan Ali'},{time:'09:50',action:'Claimed by Ahmed Rasheed'},{time:'11:30',action:'Marked delivered by Ahmed Rasheed'}]},
-      {id:'o9', orderNumber:'SG-1049', area:'Galholhu', customerName:'Aminath Reesham', phone:'+9607790123', address:'Blue House, Galholhu', locationUrl:'', items:[{design:'076',size:'King',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'Customer requested cancellation', orderDate:'12 Sep', deliveryDate:'2026-09-13', deliveryTime:'', status:'cancelled', assignedUserId:null, bucket:'week', createdBy:'Aishath Waheeda', activityLog:[{time:'12 Sep',action:'Order created by Aishath Waheeda'},{time:'13 Sep',action:'Cancelled by Admin'}]},
-      {id:'o10', orderNumber:'SG-1050', area:'Henveiru', customerName:'Moosa Rasheed', phone:'+9607701234', address:'Palm Residence, Henveiru', locationUrl:'https://maps.google.com/?q=Henveiru', items:[{design:'090',size:'Single',qty:1}], numberOfSets:1, amount:200, paymentMethod:'Cash', paymentStatus:'Unpaid', notes:'Customer unreachable, attempted twice', orderDate:'11 Sep', deliveryDate:'2026-09-12', deliveryTime:'', status:'failed', assignedUserId:'u3', bucket:'week', createdBy:'Aishath Waheeda', activityLog:[{time:'11 Sep',action:'Order created by Aishath Waheeda'},{time:'12 Sep',action:'Claimed by Ibrahim Shafiu'},{time:'12 Sep',action:'Marked failed by Ibrahim Shafiu'}]},
-      {id:'o11', orderNumber:'SG-1051', area:"Hulhumale' Phase 1", customerName:'Zulfa Adam', phone:'+9607712340', address:'Coral View, Hulhumale Phase 1', locationUrl:'https://maps.google.com/?q=Hulhumale+Phase+1', items:[{design:'058',size:'Single',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Paid Online', paymentStatus:'Paid', notes:'', orderDate:'10 Sep', deliveryDate:'2026-09-12', deliveryTime:'', status:'confirmed', assignedUserId:'u1', bucket:'week', createdBy:'Hassan Ali', deliveredAt:'12 Sep', confirmedAt:'12 Sep', amountCollected:400, ratePerSet:25, activityLog:[{time:'10 Sep',action:'Order created by Hassan Ali'},{time:'11 Sep',action:'Claimed by Ahmed Rasheed'},{time:'12 Sep',action:'Marked delivered by Ahmed Rasheed'},{time:'12 Sep',action:'Confirmed by Admin'}]},
-      {id:'o12', orderNumber:'SG-1052', area:"Hulhumale' Phase 2", customerName:'Ahmed Faisal', phone:'+9607723451', address:'Sea Breeze, Hulhumale Phase 2', locationUrl:'', items:[{design:'112',size:'Queen',qty:2},{design:'058',size:'Single',qty:1}], numberOfSets:3, amount:600, paymentMethod:'Bank Transfer', paymentStatus:'Paid', notes:'', orderDate:'25 Aug', deliveryDate:'2026-08-28', deliveryTime:'', status:'confirmed', assignedUserId:'u2', bucket:'month', createdBy:'Hassan Ali', deliveredAt:'28 Aug', confirmedAt:'30 Aug', amountCollected:600, ratePerSet:20, activityLog:[{time:'25 Aug',action:'Order created by Hassan Ali'},{time:'27 Aug',action:'Claimed by Fathimath Nazly'},{time:'28 Aug',action:'Marked delivered by Fathimath Nazly'},{time:'30 Aug',action:'Confirmed by Admin'}]},
-      {id:'o13', orderNumber:'SG-1053', area:'Boat / Launch', customerName:'Hawwa Sun', phone:'+9607734562', address:'Guesthouse, jetty', locationUrl:'', items:[{design:'047',size:'Queen',qty:2}], numberOfSets:2, amount:400, paymentMethod:'Cash', paymentStatus:'Paid', notes:'', orderDate:'20 Aug', deliveryDate:'2026-08-22', deliveryTime:'', status:'confirmed', assignedUserId:'u4', bucket:'month', createdBy:'Aishath Waheeda', deliveredAt:'22 Aug', confirmedAt:'22 Aug', amountCollected:400, ratePerSet:25, activityLog:[{time:'20 Aug',action:'Order created by Aishath Waheeda'},{time:'21 Aug',action:'Claimed by Aminath Hassan'},{time:'22 Aug',action:'Marked delivered by Aminath Hassan'},{time:'22 Aug',action:'Confirmed by Admin'}]}
-    ],
-    payouts: [
-      {id:'p1', userId:'u1', periodStart:'2026-09-01', periodEnd:'2026-09-10', amount:25, paymentDate:'11 Sep', reference:'BML-1187', notes:'Partial early payout'}
-    ],
+    users: [],
+    orders: [],
+    payouts: [],
     stock: this.initialStock()
   };
 
-  updateStockQty = (design, size, val) => this.setState(s=>({stock: s.stock.map(row=> row.design===design ? {...row, qty:{...row.qty, [size]: Number(val)||0}} : row)}));
+  updateStockQty = async (design, size, val) => {
+    const quantity = Number(val)||0;
+    this.setState(s=>({stock: s.stock.map(row=> row.design===design ? {...row, qty:{...row.qty, [size]: quantity}} : row)}));
+    const client = this.getSupabase();
+    if(this.remoteDataReady && client){
+      const {error} = await client.from('stock').upsert({design, size, quantity}, {onConflict:'design,size'});
+      if(error) this.pushNotification('Could not save the stock quantity.');
+    }
+  };
   exportStockCSV = () => {
     const header = ['Design', ...this.SIZES].join(',');
     const rows = this.state.stock.map(r => [r.design, ...this.SIZES.map(sz=>r.qty[sz])].join(','));
@@ -1028,8 +990,44 @@ class Component extends DCLogic {
   meta(status){ return this.STATUS_META[status] || this.STATUS_META.pending; }
   userName(id){ const u=this.state.users.find(x=>x.id===id); return u?u.name:'Unassigned'; }
   findOrder(id){ return this.state.orders.find(o=>o.id===id); }
-  updateOrder(id, patch){ this.setState(s=>({orders: s.orders.map(o=> o.id===id ? {...o,...patch} : o)})); }
-  addActivity(id, action){ this.setState(s=>({orders: s.orders.map(o=> o.id===id ? {...o, activityLog:[...o.activityLog, {time:'Just now', action}]} : o)})); }
+  isRemoteId(id){ return typeof id==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id); }
+  toDbOrderPatch(patch){
+    const map = {assignedUserId:'assigned_user_id', paymentMethod:'payment_method', paymentStatus:'payment_status', deliveryDate:'delivery_date', deliveredAt:'delivered_at', confirmedAt:'confirmed_at', amountCollected:'amount_collected', remarksDelivery:'remarks_delivery', proofImage:'proof_image', ratePerSet:'rate_per_set'};
+    return Object.keys(patch).reduce((out,key)=>{ const value = patch[key]; out[map[key] || key] = ['deliveredAt','confirmedAt'].includes(key) && value === 'Just now' ? new Date().toISOString() : value; return out; }, {});
+  }
+  fromDbOrder(row){
+    const deliveryDate = row.delivery_date ? new Date(row.delivery_date + 'T00:00:00') : new Date();
+    const days = Math.round((deliveryDate - new Date(new Date().toDateString())) / 86400000);
+    const bucket = days <= 0 ? 'today' : (days <= 7 ? 'week' : 'month');
+    return {...row, orderNumber:row.order_number, customerName:row.customer_name, locationUrl:row.location_url||'', paymentMethod:row.payment_method, paymentStatus:row.payment_status, orderDate:row.order_date, deliveryDate:row.delivery_date||'', assignedUserId:row.assigned_user_id, createdBy:this.userName(row.created_by), deliveredAt:row.delivered_at, confirmedAt:row.confirmed_at, amountCollected:row.amount_collected, remarksDelivery:row.remarks_delivery||'', proofImage:row.proof_image, ratePerSet:row.rate_per_set, bucket, numberOfSets:(row.order_items||[]).reduce((sum,item)=>sum+Number(item.quantity||0),0), items:(row.order_items||[]).map(item=>({design:item.design,size:item.size,qty:item.quantity})), activityLog:(row.order_activity||[]).map(item=>({time:new Date(item.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), action:item.action}))};
+  }
+  async loadOperationalData(){
+    const client = this.getSupabase(); if(!client) return false;
+    const [ordersResult, stockResult, payoutsResult, settingsResult] = await Promise.all([
+      client.from('orders').select('*,order_items(*),order_activity(*)').order('created_at', {ascending:false}),
+      client.from('stock').select('design,size,quantity').order('design'),
+      client.from('payouts').select('*').order('created_at', {ascending:false}),
+      client.from('app_settings').select('key,value')
+    ]);
+    if(ordersResult.error || stockResult.error || payoutsResult.error || settingsResult.error) return false;
+    this.remoteDataReady = true;
+    const orders = (ordersResult.data||[]).map(row=>this.fromDbOrder(row));
+    const stockMap = {};
+    (stockResult.data||[]).forEach(row=>{ stockMap[row.design] = stockMap[row.design] || {design:row.design, image:'designs/'+this.designImageFiles[Number(row.design)-1], qty:{}}; stockMap[row.design].qty[row.size] = row.quantity; });
+    const settings = (settingsResult.data||[]).reduce((out,row)=>({...out, [row.key]:row.value}), {});
+    this.setState({orders, payouts:(payoutsResult.data||[]).map(p=>({...p, userId:p.user_id, periodStart:p.period_start, periodEnd:p.period_end, paymentDate:p.payment_date})), stock:Object.values(stockMap).length ? Object.values(stockMap) : this.state.stock, settings:{...this.state.settings, ...(settings.business||{})}, bankDraft:settings.business?.bankAccounts || this.state.bankDraft, rateDraft:settings.business?.ratePerSet || this.state.rateDraft});
+    return true;
+  }
+  updateOrder(id, patch){
+    this.setState(s=>({orders: s.orders.map(o=>o.id===id ? {...o,...patch} : o)}));
+    const client = this.getSupabase();
+    if(this.remoteDataReady && client && this.isRemoteId(id)) client.from('orders').update(this.toDbOrderPatch(patch)).eq('id',id).then(({error})=>{ if(error) this.pushNotification('Could not save the order change.'); });
+  }
+  addActivity(id, action){
+    this.setState(s=>({orders: s.orders.map(o=>o.id===id ? {...o, activityLog:[...o.activityLog, {time:'Just now', action}]} : o)}));
+    const client = this.getSupabase();
+    if(this.remoteDataReady && client && this.isRemoteId(id)) client.from('order_activity').insert({order_id:id, actor_id:this.state.currentUserId, action}).then(({error})=>{ if(error) this.pushNotification('Could not save the order activity.'); });
+  }
   pushNotification(text){ this.setState(s=>({notifications:[{id:Date.now(), text, time:'Just now'}, ...s.notifications]})); }
   stop = (e) => { if(e && e.stopPropagation) e.stopPropagation(); };
 
@@ -1056,8 +1054,7 @@ class Component extends DCLogic {
         await client.auth.signOut();
       }
     }
-    const u = this.state.users.find(x=>x.email.toLowerCase()===email && x.status==='active');
-    if(u){ this.quickLogin(u.id); } else { this.setState({loginError:'No matching demo account. Try one of the accounts below.'}); }
+    this.setState({loginError:'Unable to sign in. Check your Supabase account credentials.'});
   };
   logout = async () => {
     const client = this.getSupabase();
@@ -1078,7 +1075,7 @@ class Component extends DCLogic {
   addNewOrderItem = () => this.setState(s=>({newOrder:{...s.newOrder, items:[...s.newOrder.items, {design:'',size:'Single',qty:1}]}}));
   removeNewOrderItem = (idx) => this.setState(s=>({newOrder:{...s.newOrder, items:s.newOrder.items.filter((_,i)=>i!==idx)}}));
   setNewOrderItemField = (idx,key,val) => this.setState(s=>({newOrder:{...s.newOrder, items:s.newOrder.items.map((it,i)=> i===idx?{...it,[key]:val}:it)}}));
-  saveNewOrder = () => {
+  saveNewOrder = async () => {
     const n = this.state.newOrder;
     if(!n.customerName || !n.phone || !n.address){ this.setState({newOrderError:'Customer name, phone and address are required.'}); return; }
     const num = 'SG-' + (1054 + this.state.orders.length);
@@ -1092,6 +1089,22 @@ class Component extends DCLogic {
       status:'pending', assignedUserId:null, bucket:'today', createdBy: this.currentUser().name,
       activityLog:[{time:'Just now', action:'Order created by ' + this.currentUser().name}]
     };
+    if(this.remoteDataReady){
+      const client = this.getSupabase();
+      const {data:created, error} = await client.from('orders').insert({
+        order_number:num, area:n.area, customer_name:n.customerName, phone:n.phone, address:n.address,
+        location_url:n.locationUrl||null, amount:Number(n.amount)||0, payment_method:n.paymentMethod,
+        payment_status:n.paymentStatus, notes:n.notes||'', order_date:new Date().toISOString().slice(0,10),
+        delivery_date:n.deliveryDate||null, delivery_time:n.deliveryTime||null, status:'pending', created_by:this.state.currentUserId
+      }).select().single();
+      if(error || !created){ this.pushNotification('Could not save the order to the database.'); return; }
+      const {error:itemError} = await client.from('order_items').insert(items.map(it=>({order_id:created.id, design:it.design, size:it.size, quantity:Number(it.qty)||1})));
+      if(itemError){ await client.from('orders').delete().eq('id',created.id); this.pushNotification('Could not save the order items.'); return; }
+      await client.from('order_activity').insert({order_id:created.id, actor_id:this.state.currentUserId, action:'Order created by ' + this.currentUser().name});
+      this.setState(s=>({orders:[this.fromDbOrder({...created, order_items:items.map(it=>({design:it.design,size:it.size,quantity:Number(it.qty)||1})), order_activity:[]}), ...s.orders], newOrderOpen:false}));
+      this.pushNotification('New order ' + num + ' added to ' + n.area);
+      return;
+    }
     this.setState(s=>({orders:[order, ...s.orders], newOrderOpen:false}));
     this.pushNotification('New order ' + num + ' added to ' + n.area);
   };
@@ -1108,6 +1121,8 @@ class Component extends DCLogic {
   cancelSelectedOrder = () => { const id=this.state.selectedOrderId; this.updateOrder(id, {status:'cancelled'}); this.addActivity(id, 'Cancelled by Admin'); };
   deleteOrder = (id) => {
     if(typeof window!=='undefined' && !window.confirm('Delete this order? This cannot be undone.')) return;
+    const client = this.getSupabase();
+    if(this.remoteDataReady && client && this.isRemoteId(id)) client.from('orders').delete().eq('id',id).then(({error})=>{ if(error) this.pushNotification('Could not delete the order from the database.'); });
     this.setState(s=>({orders:s.orders.filter(o=>o.id!==id), orderDetailOpen:false}));
     this.pushNotification('Order deleted by ' + this.currentUser().name);
   };
@@ -1164,14 +1179,24 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({bankCopiedId:null}), 1500);
   };
   setBankField = (idx, key, val) => this.setState(s=>({bankDraft: s.bankDraft.map((b,i)=> i===idx ? {...b,[key]:val} : b)}));
-  saveBankDetails = () => this.setState(s=>({settings:{...s.settings, bankAccounts: s.bankDraft.map(b=>({...b}))}, bankSaved:true}));
+  saveBankDetails = async () => {
+    const bankAccounts = this.state.bankDraft.map(b=>({...b}));
+    this.setState(s=>({settings:{...s.settings, bankAccounts}, bankSaved:true}));
+    const client = this.getSupabase();
+    if(this.remoteDataReady && client){ const {error} = await client.from('app_settings').upsert({key:'business', value:{...this.state.settings, bankAccounts, ratePerSet:this.state.settings.ratePerSet}, updated_by:this.state.currentUserId}); if(error) this.pushNotification('Could not save the bank settings.'); }
+  };
   onStockSearchChange = (e) => this.setState({stockSearch:e.target.value});
   openStockPreview = (design) => this.setState({stockPreviewDesign:design});
   closeStockPreview = () => this.setState({stockPreviewDesign:null});
   toggleTheme = () => this.setState(s=>({theme: s.theme==='dark' ? 'light' : 'dark'}));
   DARK_VARS = '--color-bg:#17181a;--color-surface:#212226;--color-text:#f0eeed;--color-divider:rgba(240,238,237,0.22);--color-neutral-100:#2a2b2f;--color-neutral-200:#33343a;--color-neutral-300:#3c3e46;--color-neutral-800:#d8d6d5;--color-neutral-900:#efeceb;--color-accent-100:#3a1712;--color-accent-700:#ff9783;--color-accent-800:#ffb3a3;';
   onRateDraftChange = (e) => this.setState({rateDraft:e.target.value, rateSaved:false});
-  saveRate = () => { const v = Number(this.state.rateDraft)||this.state.settings.ratePerSet; this.setState(s=>({settings:{...s.settings, ratePerSet:v}, rateSaved:true})); };
+  saveRate = async () => {
+    const v = Number(this.state.rateDraft)||this.state.settings.ratePerSet;
+    this.setState(s=>({settings:{...s.settings, ratePerSet:v}, rateSaved:true}));
+    const client = this.getSupabase();
+    if(this.remoteDataReady && client){ const {error} = await client.from('app_settings').upsert({key:'business', value:{...this.state.settings, ratePerSet:v, bankAccounts:this.state.settings.bankAccounts}, updated_by:this.state.currentUserId}); if(error) this.pushNotification('Could not save the delivery rate.'); }
+  };
   openUserForm = () => this.setState({userFormOpen:true, newUser:{name:'',phone:'',email:''}});
   closeUserForm = () => this.setState({userFormOpen:false});
   nu(key){ return (e)=> this.setState(s=>({newUser:{...s.newUser, [key]:e.target.value}})); }
@@ -1182,17 +1207,17 @@ class Component extends DCLogic {
     if(client && this.state.role==='admin'){
       client.from('app_users').insert(user).then(({error})=>{
         if(error){ this.pushNotification('Could not save user to the shared database.'); return; }
-        this.setState(s=>({users:[...s.users, user], userFormOpen:false}), () => this.persistUsers(this.state.users));
+        this.setState(s=>({users:[...s.users, user], userFormOpen:false}));
       });
       return;
     }
-    this.setState(s=>({users:[...s.users, user], userFormOpen:false}), () => this.persistUsers(this.state.users));
+    this.setState(s=>({users:[...s.users, user], userFormOpen:false}));
   };
   toggleUserStatus = (userId) => {
     const user = this.state.users.find(u=>u.id===userId); if(!user) return;
     const status = user.status==='active'?'disabled':'active';
     const client = this.getSupabase();
-    const finish = () => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status} : u)}), () => this.persistUsers(this.state.users));
+    const finish = () => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, status} : u)}));
     if(client && this.state.role==='admin' && !String(userId).startsWith('u')){
       client.from('app_users').update({status}).eq('id',userId).then(({error})=> error ? this.pushNotification('Could not update the shared user record.') : finish());
       return;
@@ -1201,7 +1226,7 @@ class Component extends DCLogic {
   };
   changeUserRole = (userId, role) => {
     const client = this.getSupabase();
-    const finish = () => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}), () => this.persistUsers(this.state.users));
+    const finish = () => this.setState(s=>({users:s.users.map(u=> u.id===userId ? {...u, role} : u)}));
     if(client && this.state.role==='admin' && !String(userId).startsWith('u')){
       client.from('app_users').update({role}).eq('id',userId).then(({error})=> error ? this.pushNotification('Could not update the shared user record.') : finish());
       return;
@@ -1213,7 +1238,7 @@ class Component extends DCLogic {
     const user = this.state.users.find(u=>u.id===userId);
     if(!user || (typeof window!=='undefined' && !window.confirm('Remove ' + user.name + '? This cannot be undone.'))) return;
     const client = this.getSupabase();
-    const finish = () => this.setState(s=>({users:s.users.filter(u=>u.id!==userId)}), () => this.persistUsers(this.state.users));
+    const finish = () => this.setState(s=>({users:s.users.filter(u=>u.id!==userId)}));
     if(client && this.state.role==='admin' && !String(userId).startsWith('u')){
       client.from('app_users').delete().eq('id',userId).then(({error})=> error ? this.pushNotification('Could not remove the shared user record.') : finish());
       return;
@@ -1231,9 +1256,16 @@ class Component extends DCLogic {
   openPayoutForm = (userId) => this.setState({payoutFormOpen:true, payoutUserId:userId, payoutForm:{periodStart:'',periodEnd:'',amount:String(this.computeOutstanding(userId)),reference:'',notes:''}});
   closePayoutForm = () => this.setState({payoutFormOpen:false});
   pf(key){ return (e)=> this.setState(s=>({payoutForm:{...s.payoutForm, [key]:e.target.value}})); }
-  savePayout = () => {
+  savePayout = async () => {
     const f = this.state.payoutForm; const uid = this.state.payoutUserId;
-    this.setState(s=>({payouts:[...s.payouts, {id:'p'+Date.now(), userId:uid, periodStart:f.periodStart, periodEnd:f.periodEnd, amount:Number(f.amount)||0, paymentDate:'Today', reference:f.reference, notes:f.notes}], payoutFormOpen:false}));
+    if(this.remoteDataReady){
+      const client = this.getSupabase();
+      const {data, error} = await client.from('payouts').insert({user_id:uid, period_start:f.periodStart||null, period_end:f.periodEnd||null, amount:Number(f.amount)||0, reference:f.reference||'', notes:f.notes||'', created_by:this.state.currentUserId}).select().single();
+      if(error || !data){ this.pushNotification('Could not save the payout to the database.'); return; }
+      this.setState(s=>({payouts:[{...data, userId:data.user_id, periodStart:data.period_start, periodEnd:data.period_end, paymentDate:data.payment_date}, ...s.payouts], payoutFormOpen:false}));
+    } else {
+      this.setState(s=>({payouts:[...s.payouts, {id:'p'+Date.now(), userId:uid, periodStart:f.periodStart, periodEnd:f.periodEnd, amount:Number(f.amount)||0, paymentDate:'Today', reference:f.reference, notes:f.notes}], payoutFormOpen:false}));
+    }
     this.pushNotification('Payment recorded for ' + this.userName(uid));
   };
 
@@ -1263,14 +1295,10 @@ class Component extends DCLogic {
     const client = this.getSupabase(); if(!client) return false;
     const {data, error} = await client.from('app_users').select('id,name,phone,email,role,status').order('created_at');
     if(error) return false;
-    if(Array.isArray(data) && data.length){ this.setState({users:data}); this.persistUsers(data); }
+    if(Array.isArray(data)){ this.setState({users:data}); }
     return true;
   }
   async componentDidMount(){
-    try {
-      const saved = JSON.parse(localStorage.getItem(this.USER_STORAGE_KEY) || 'null');
-      if(Array.isArray(saved) && saved.length) this.setState({users:saved});
-    } catch {}
     const client = this.getSupabase();
     if(!client) return;
     const {data:{session}} = await client.auth.getSession();
@@ -1278,14 +1306,11 @@ class Component extends DCLogic {
       const {data:profile} = await client.from('profiles').select('id,name,email,phone,role,status').eq('id',session.user.id).single();
       if(profile?.status==='active'){
         await this.loadRemoteUsers();
+        await this.loadOperationalData();
         this.setState({role:profile.role, currentUserId:profile.id, loginError:''});
       }
     }
   }
-  persistUsers = (users) => {
-    try { localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(users)); } catch {}
-  };
-
   renderVals() {
     const s = this.state;
     const me = this.currentUser();
@@ -1310,9 +1335,6 @@ class Component extends DCLogic {
     const theme = s.theme || 'light';
     const themeVarsCss = theme==='dark' ? this.DARK_VARS : '';
     const iconThemeToggle = this.ic(theme==='dark' ? 'sun' : 'moon', 17);
-
-    const roleLabelOf = (role) => role==='admin' ? 'Admin' : (role==='manager' ? 'Manager' : 'Delivery Staff');
-    const demoAccounts = s.users.filter(u=>u.status==='active').map(u=>({name:u.name, roleLabel: roleLabelOf(u.role), onClick: () => this.quickLogin(u.id)}));
 
     const iconBell = this.ic('bell',20);
     const iconMenu = this.ic('menu',20);
@@ -1551,7 +1573,6 @@ class Component extends DCLogic {
       shellRoleLabel: isFullAdmin ? 'Admin console' : 'Order manager console',
       loginEmail: s.loginEmail, loginPassword: s.loginPassword, loginError: s.loginError,
       onLoginEmailChange: this.onLoginEmailChange, onLoginPasswordChange: this.onLoginPasswordChange, submitLogin: this.submitLogin,
-      demoAccounts,
       currentUser: {name: me.name, firstName: (me.name||'').split(' ')[0], initials: (me.name||'').split(' ').map(x=>x[0]).slice(0,2).join(''), phone: me.phone, email: me.email},
       logout: this.logout, toggleNotif: this.toggleNotif, notifOpen: s.notifOpen,
       notifications: s.notifications.slice(0,8), hasNotifications: s.notifications.length>0, noNotifications: s.notifications.length===0, notifCount: s.notifications.length>9?'9+':s.notifications.length,
